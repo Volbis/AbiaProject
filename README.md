@@ -31,6 +31,50 @@ Ce projet a pour objectif de créer une **poubelle connectée et autonome**, cap
 - 🎬 CapCut pour la création de contenu vidéo promotionnel  
 
 ---
+## Structure du projet
+
+lib/                     # Dossier principal contenant tout le code source
+│
+├── common/                  # Config et utilitaires (Utiliser dans tout le programme)
+│   ├── constants/           # Constants de l'application (memes éléments partout)
+│   ├── theme/               # Thème et styles de l'application
+│   └── utils/               # Fonctions utilitaires (Fonctions de validations d'email....)
+│
+├── bin_data/                  # Couche données des poubelles & API....
+│   ├── classes/             # Classes de données (User, Poubelle, etc.)
+│   ├── data_poubelle/       # Gestion des données (Les donnée de la poubelle)
+│   └── services/            # Servicesservices externes (API, notifications, etc.)
+│
+├── pages/                # Fonctionnalités principales (Les pages)
+│   ├── auth/               # Authentification
+│   │   ├── screens/        # Écrans (login, register)
+│   │   ├── widgets/        # Widgets spécifiques à l'authentification
+│   │   └── controllers/    # Logique métier
+│   │
+│   ├── carte_Poubelle_manage/            # Tableau de bord
+│   │   ├── screens/        # Écrans (login, register)
+│   │   ├── widgets/        # Widgets spécifiques à l'authentification
+│   │   └── controllers/    # Logique métier
+│   │ 
+│   └── collecte/         # Gestion des collectes
+│   │   ├── screens/        # Écrans (de collections de déchets)
+│   │   ├── widgets/        # Widgets spécifiques à la collection
+│   │   └── controllers/    # Logique métier
+│   │
+│   └── dashboard/        # Tableau de board
+│   │   ├── screens/        # Écrans 
+│   │   ├── widgets/        # Widgets spécifiques
+│   │   └── controllers/    # Logique métier
+│   │  
+│   └── notifications/    # Tableau de board
+│   │   ├── screens/        # Écrans 
+│   │   ├── widgets/        # Widgets spécifiques
+│   │   └── controllers/    # Logique métier
+│   │  
+├── Partagés/              # Composants partagés
+│   ├── widgets/             # Widgets réutilisables
+│
+└── main.dart              # Point d'entrée de l'application
 
 ## 🎯 Objectifs du projet
 
