@@ -1,90 +1,95 @@
 import 'package:flutter/material.dart';
 
+// Importations des thèmes et constantes
+import 'common/theme/app_theme.dart';
+import 'common/constants/app_constants.dart';
+
+// Importations des contrôleurs
+import 'pages/authentification/controllers/auth_controller.dart';
+import 'pages/dashboard/controllers/dashboard_controller.dart';
+import 'pages/collecte/controllers/collecte_controller.dart';
+import 'pages/carte_Poubelle_manage/controllers/carte_controller.dart';
+import 'pages/notifications/controllers/notification_controller.dart';
+
+// Importations des écrans
+import 'pages/authentification/screens/login_screen.dart';
+//import 'pages/dashboard/screens/dashboard_screen.dart';
+
 void main() {
-  runApp(const MyApp());
+  // Assurez-vous que Flutter est initialisé
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialiser les contrôleurs de chaque page
+  final authController = AuthController();
+  /*final dashboardController = DashboardController();
+  final collecteController = CollecteController();
+  final carteController = CarteController();
+  final notificationController = NotificationController();
+  */
+  runApp(MyApp(
+    authController: authController,
+    //dashboardController: dashboardController,
+  ));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final AuthController authController;
+  //final DashboardController dashboardController;
+  
+  const MyApp({
+    super.key, 
+    required this.authController, 
+    //required this.dashboardController
+  });
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Login Page',
+      title: 'Abia - La Poubelle Intelligente',
       theme: ThemeData(
         fontFamily: 'Poppins',
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: AppColors.primaryColor,
+          primary: AppColors.primaryColor,
+          secondary: AppColors.accentColor,
+          background: AppColors.backgroundColor,
+          surface: AppColors.surfaceColor
+        ),
+        textTheme: const TextTheme(
+          bodyLarge: TextStyle(color: AppColors.textPrimary),
+          bodyMedium: TextStyle(color: AppColors.textPrimary),
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(15),
+            borderSide: const BorderSide(color: Color(0xFFDFE2E5)),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(15),
+            borderSide: const BorderSide(color: Color(0xFFFE554A)),
+          ),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFFFE554A),
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ),
         useMaterial3: true,
       ),
-      home: const LoginPage(),
+      initialRoute: '/login',
+      routes: {
+        '/login': (context) => LoginScreen(authController: authController),
+        //'/dashboard': (context) => DashboardScreen(dashboardController: dashboardController),
+        // Ajoutez ici les autres routes
+      },
     );
-  }
-}
-
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
-
-  @override
-  State<LoginPage> createState() => _LoginPageState();
-}
-
-class _LoginPageState extends State<LoginPage> {
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-
-
-
-  void _handleLogin() {
-    // TODO: Implement login logic
-    print('Email: ${_emailController.text}');
-    print('Password: ${_passwordController.text}');
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Joins VolbisKing'),
-        centerTitle: true,
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            TextField(
-              controller: _emailController,
-              decoration: const InputDecoration(
-                labelText: 'Email',
-                border: OutlineInputBorder(),
-              ),
-              keyboardType: TextInputType.emailAddress,
-            ),
-            const SizedBox(height: 16.0),
-            TextField(
-              controller: _passwordController,
-              decoration: const InputDecoration(
-                labelText: 'Password',
-                border: OutlineInputBorder(),
-              ),
-              obscureText: true,
-            ),
-            const SizedBox(height: 24.0),
-            ElevatedButton(
-              onPressed: _handleLogin,
-              child: const Text('Login'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
   }
 }
