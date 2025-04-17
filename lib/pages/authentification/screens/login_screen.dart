@@ -99,11 +99,11 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(25.0),
+          padding: const EdgeInsets.all(30.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const SizedBox(height: 20),
+              const SizedBox(height: 60),
               
               // Avatar circulaire
               Container(
@@ -129,7 +129,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height:80),
 
               // Champ email
               Column(
@@ -236,7 +236,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               const SizedBox(height: 27),
-
+              /*
               // OU séparateur
               Row(
                 children: [
@@ -254,6 +254,28 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 24),
 
               // Bouton Google
+              SizedBox(
+                width: 200,
+                child: OutlinedButton.icon(
+                  icon: Image.asset('assets/images/google_icon.png', height: 25, width: 25),
+                  label: const Text(
+                    'Continuer avec Google',
+                    style: TextStyle(
+                      color: Colors.black87,
+                      fontSize: 16,
+                    ),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    side: BorderSide.none,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    backgroundColor: const Color.fromARGB(189, 220, 220, 220),
+                  ),
+                  onPressed: _isLoading ? null : _handleGoogleLogin,
+                ),
+              ),
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
@@ -276,7 +298,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   onPressed: _isLoading ? null : _handleGoogleLogin,
                 ),
-              ),
+              ),*/
+              
               const SizedBox(height: 18),
 
             ],
