@@ -27,7 +27,7 @@ class _LoginScreenState extends State<LoginScreen> {
         _emailController.text,
         _passwordController.text,
       );
-      print(success);
+      print("Login success: $success"); // Debugging line
       
       setState(() {
         _isLoading = false;
@@ -52,7 +52,7 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       }
     }
-  
+  /*
   void _handleGoogleLogin() async {
      
     setState(() {
@@ -89,7 +89,7 @@ class _LoginScreenState extends State<LoginScreen> {
     } 
     
 }
-  
+  */
   
   /*====LE DESIGN DE LA PAGE====*/
   @override
@@ -118,16 +118,16 @@ class _LoginScreenState extends State<LoginScreen> {
               
               // Avatar circulaire
               Container(
-                width: 80,
-                height: 80,
+                width: 90,
+                height: 90,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.grey[300],
+                  color: const Color.fromARGB(119, 227, 227, 227),
                 ),
                 child: const Icon(
-                  Icons.person_outline,
+                  Icons.person_outline_rounded,
                   size: 40,
-                  color: Colors.white,
+                  color: AppColors.primaryColor,
                 ),
               ),
               const SizedBox(height: 24),
@@ -242,6 +242,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 17,
+                           fontWeight: FontWeight.w600,
                           ),
                         ),
                 ),

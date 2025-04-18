@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class AppColors {
   // Couleurs principales
   static const primaryColor = Color.fromARGB(239, 249, 83, 32);
-  static const accentColor = Color(0xFF0B735F);
+  static const secondaryColor = Color(0xFF5470F2);
   
   // Couleurs du dégradé
   static const gradientStart = Color(0xFFF9541F);

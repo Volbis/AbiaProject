@@ -1,27 +1,40 @@
 // Cette classe gère l'authentification de l'utilisateur
 
 class AuthController {
-  // Méthode de login
-  Future<bool> login(String email, String password) async {
-    // Implémenter la logique de connexion
-    return email.isNotEmpty && password.isNotEmpty;
-  }
+    // Variable pour suivre l'état de connexion
+  bool _isAuthenticated = false;
+  String? _currentUserEmail;
 
-  Future<bool> loginWithGoogle() async {
-  // Ici, implémentez la logique de connexion avec Google
-  // Pour l'instant, retournons true pour simuler un succès
-  await Future.delayed(Duration(milliseconds: 500)); // Simuler un délai réseau
-  return true;
-}
-  
-  // Méthode pour vérifier si l'utilisateur est connecté
-  bool isLoggedIn() {
-    // Implémenter la vérification
+  // Méthode de login modifiée pour mettre à jour l'état de connexion
+  Future<bool> login(String email, String password) async {
+    // Déclarer des variables pour les identifiants administrateur
+    String adminEmail = "admin@example.com";
+    String adminPassword = "Admin123!";
+    
+    // Implémenter la logique de connexion
+    if (email == adminEmail && password == adminPassword) {
+      // Connexion administrateur réussie
+      _isAuthenticated = true;
+      _currentUserEmail = email;
+      return true;
+    }
     return false;
   }
+
+  // Méthode pour vérifier si l'utilisateur est connecté
+  bool isLoggedIn() {
+    // Retourne l'état actuel de l'authentification
+    return _isAuthenticated;
+  }
   
-  // Méthode de déconnexion
+  // Obtenir l'email de l'utilisateur connecté
+  String? getCurrentUserEmail() {
+    return _currentUserEmail;
+  }
+  
+  // Méthode de déconnexion mise à jour
   Future<void> logout() async {
-    // Implémenter la logique de déconnexion
+    _isAuthenticated = false;
+    _currentUserEmail = null;
   }
 }

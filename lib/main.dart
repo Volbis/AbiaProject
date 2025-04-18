@@ -51,7 +51,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(
           seedColor: AppColors.primaryColor,
           primary: AppColors.primaryColor,
-          secondary: AppColors.accentColor,
+          secondary: AppColors.secondaryColor,
           background: AppColors.backgroundColor,
           surface: AppColors.surfaceColor
         ),

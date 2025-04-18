@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:abiaproject/common/theme/app_theme.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 class VerificationSuccessScreen extends StatelessWidget {
   final VoidCallback onContinue;
@@ -12,15 +13,15 @@ class VerificationSuccessScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.backgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(
             Icons.chevron_left,
-            size: 32,
-            color: Colors.black,
+            size: 40,
+            color: AppColors.textPrimary,
           ),
           onPressed: () => Navigator.of(context).pop(),
         ),
@@ -30,21 +31,33 @@ class VerificationSuccessScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Icône de succès
+            // Icone de validation
             Container(
-              width: 80,
-              height: 80,
-              decoration: const BoxDecoration(
-                color: Color(0xFF5468FF),
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                color: AppColors.secondaryColor,
                 shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.secondaryColor.withOpacity(0.2),
+                    spreadRadius: 5,
+                    blurRadius: 7,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
               ),
-              child: const Icon(
-                Icons.check,
-                color: Colors.white,
-                size: 40,
+              child: const Center(
+                child: Icon(
+                  Symbols.verified_rounded,  
+                  color: Colors.white,
+                  size: 90,
+                  weight: 600,  
+                ),
               ),
             ),
-            const SizedBox(height: 24),
+
+            const SizedBox(height: 50),
             
             // Texte de confirmation
             const Text(
@@ -59,7 +72,7 @@ class VerificationSuccessScreen extends StatelessWidget {
             
             // Message secondaire
             const Text(
-              'Vous pourrez accéder en tant qu\'admin',
+              'Vous êtes connecté en tant qu\'admin',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 16,
@@ -74,7 +87,7 @@ class VerificationSuccessScreen extends StatelessWidget {
               child: ElevatedButton(
                 onPressed: onContinue,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF5468FF),
+                  backgroundColor: AppColors.secondaryColor,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
@@ -84,8 +97,8 @@ class VerificationSuccessScreen extends StatelessWidget {
                 child: const Text(
                   'Continue',
                   style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
