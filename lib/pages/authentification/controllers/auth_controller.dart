@@ -9,7 +9,7 @@ class AuthController {
   Future<bool> login(String email, String password) async {
     // Déclarer des variables pour les identifiants administrateur
     String adminEmail = "admin@example.com";
-    String adminPassword = "Admin123!";
+    String adminPassword = "!Admin123";
     
     // Implémenter la logique de connexion
     if (email == adminEmail && password == adminPassword) {

@@ -8,11 +8,12 @@ import 'common/constants/app_constants.dart';
 import 'pages/authentification/controllers/auth_controller.dart';
 import 'pages/dashboard/controllers/dashboard_controller.dart';
 import 'pages/collecte/controllers/collecte_controller.dart';
-import 'pages/carte_Poubelle_manage/controllers/carte_controller.dart';
+import 'pages/carte_Poubelle_manage/controllers/carte_poubelle_controller.dart';
 import 'pages/notifications/controllers/notification_controller.dart';
 
-// Importations des écrans
+// Importations des pages
 import 'pages/authentification/screens/login_screen.dart';
+import 'pages/carte_Poubelle_manage/screens/carte_poubelle_screen.dart';
 //import 'pages/dashboard/screens/dashboard_screen.dart';
 
 void main() {
@@ -21,6 +22,8 @@ void main() {
   
   // Initialiser les contrôleurs de chaque page
   final authController = AuthController();
+  final trashMapController = TrashMapController();
+  
   /*final dashboardController = DashboardController();
   final collecteController = CollecteController();
   final carteController = CarteController();
@@ -28,20 +31,23 @@ void main() {
   */
   runApp(MyApp(
     authController: authController,
+    trashMapController: trashMapController,
     //dashboardController: dashboardController,
   ));
 }
 
 class MyApp extends StatelessWidget {
   final AuthController authController;
+  final TrashMapController trashMapController;
   //final DashboardController dashboardController;
   
   const MyApp({
     super.key, 
     required this.authController, 
+    required this.trashMapController,
     //required this.dashboardController
   });
-
+   
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -87,6 +93,7 @@ class MyApp extends StatelessWidget {
       initialRoute: '/login',
       routes: {
         '/login': (context) => LoginScreen(authController: authController),
+        '/map': (context) => TrashMapScreen(trashMapController: trashMapController),
         //'/dashboard': (context) => DashboardScreen(dashboardController: dashboardController),
         // Ajoutez ici les autres routes
       },

@@ -37,6 +37,23 @@ dependencies:
   google_fonts: ^5.1.0
   material_symbols_icons: ^4.2719.1
 
+  # Localisation
+  geolocator: ^13.0.2
+  location: ^7.0.1
+
+  # Carte
+  flutter_map: ^7.0.2
+  latlong2: ^0.9.1
+  flutter_map_location_marker: ^9.1.1
+  
+  # UI
+  custom_info_window: ^1.0.1
+  
+  # Réseau et données
+  http: ^1.3.0
+  flutter_polyline_points: ^2.1.0
+
+
 
 dev_dependencies:
   flutter_test:

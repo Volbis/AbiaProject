@@ -41,7 +41,7 @@ class _LoginScreenState extends State<LoginScreen> {
             builder: (context) => VerificationSuccessScreen(
               onContinue: () {
                 // Lors du clic sur Continue, naviguer vers le dashboard
-                //Navigator.pushReplacementNamed(context, '/dashboard');
+                Navigator.pushReplacementNamed(context, '/map');
               },
             ),
           ),
