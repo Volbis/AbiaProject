@@ -1,5 +1,8 @@
 import 'package:abiaproject/common/theme/app_theme.dart';
 import 'package:abiaproject/pages/carte_Poubelle_manage/controllers/carte_poubelle_controller.dart';
+import 'package:abiaproject/partagés/widgets_partagés/nav_bar_avec_plus.dart';
+
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart' as latlong;
@@ -90,203 +93,203 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
     }
   }
 
+  // Remplacez tout le contenu de votre méthode build avec ce qui suit:
   @override
   Widget build(BuildContext context) {
+    // Utilisez un Scaffold comme conteneur principal
     return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Carte principale
-            Expanded(
-              child: Stack(
-                children: [
-
-                  // La carte en arrière-plan
-                  FlutterMap(
-                    mapController: _mapController,
-                    options: MapOptions(
-                      initialCenter: _currentPosition != null
-                          ? latlong.LatLng(_currentPosition!.latitude, _currentPosition!.longitude)
-                          : latlong.LatLng(48.8566, 2.3522),
-                      initialZoom: 18,
-                      onTap: (tapPosition, point) {
+      // Le corps contient la carte et tous les éléments superposés
+      body: Stack(
+        children: [
+          // La carte en arrière-plan (couvre tout l'écran)
+          FlutterMap(
+            mapController: _mapController,
+            options: MapOptions(
+              initialCenter: _currentPosition != null
+                  ? latlong.LatLng(_currentPosition!.latitude, _currentPosition!.longitude)
+                  : latlong.LatLng(48.8566, 2.3522),
+              initialZoom: 18,
+              onTap: (tapPosition, point) {
+                setState(() {
+                  showInfoWindow = false;
+                });
+              },
+            ),
+            children: [
+              // La couche de la carte OpenStreetMap
+              TileLayer(
+                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                userAgentPackageName: 'com.example.app',
+              ),
+              
+              // Marqueur de localisation actuelle
+              CurrentLocationLayer(
+                style: const LocationMarkerStyle(
+                  marker: DefaultLocationMarker(
+                    color: AppColors.primaryColor,
+                    child: Icon(
+                      Icons.person,
+                      color: Colors.white,
+                      size: 15,
+                    ),
+                  ),
+                  accuracyCircleColor: Colors.blue,
+                ),
+              ),
+              
+              // Marqueurs des poubelles
+              MarkerLayer(
+                markers: trashBins.map((bin) {
+                  return Marker(
+                    width: 40,
+                    height: 40,
+                    point: bin.latLng,
+                    child: GestureDetector(
+                      onTap: () {
                         setState(() {
-                          showInfoWindow = false;
+                          selectedBin = bin;
+                          showInfoWindow = true;
                         });
                       },
+                      child: const Icon(
+                        Icons.delete_outline_rounded,
+                        color: AppColors.primaryColor,
+                        size: 30,
+                      ),
                     ),
-                    children: [
-
-                      // La couche de la carte OpenStreetMap
-                      TileLayer(
-                        urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                        userAgentPackageName: 'com.example.app',
-                      ),
-                      
-                      // Marqueur de localisation actuelle
-                      CurrentLocationLayer(
-                        style: const LocationMarkerStyle(
-                          marker: DefaultLocationMarker(
-                            color: AppColors.primaryColor,
-                            child: Icon(
-                              Icons.person,
-                              color: Colors.white,
-                              size: 15,
-                            ),
-                          ),
-                          accuracyCircleColor: Colors.blue,
-                        ),
-                      ),
-                      
-                      // Marqueurs des poubelles
-                      MarkerLayer(
-                        markers: trashBins.map((bin) {
-                          return Marker(
-                            width: 40,
-                            height: 40,
-                            point: bin.latLng,
-                            child: GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  selectedBin = bin;
-                                  showInfoWindow = true;
-                                });
-                              },
-                              child: const Icon(
-                                Icons.delete_outline_rounded,
-                                color: AppColors.primaryColor,
-                                size: 30,
-                              ),
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    ],
+                  );
+                }).toList(),
+              ),
+            ],
+          ),
+          
+          // Titre flottant en haut
+          Positioned(
+            top: 40, // Ajusté pour la zone safe area
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Container(
+                width: 290,
+                margin: const EdgeInsets.symmetric(horizontal: 20),
+                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                decoration: BoxDecoration(
+                  color: AppColors.cardBackground.withOpacity(0.6),
+                  borderRadius: BorderRadius.circular(9),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      blurRadius: 5,
+                      spreadRadius: 1,
+                    )
+                  ],
+                ),
+                child: const Text(
+                  'Carte des poubelles',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Color.fromARGB(255, 83, 83, 83),
                   ),
-                  
-                  // Titre flottant en haut
-                  Positioned(
-                    top: 25,
-                    left: 0,
-                    right: 0,
-                    child: Center(
-                      child: Container(
-                        width: 290,
-                        //constraints: const BoxConstraints(maxWidth: 250),
-                        margin: const EdgeInsets.symmetric(horizontal: 20),
-                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                        decoration: BoxDecoration(
-                          color: AppColors.cardBackground.withOpacity(0.6),
-                          borderRadius: BorderRadius.circular(9),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
-                              blurRadius: 5,
-                              spreadRadius: 1,
-                            )
-                          ],
-                        ),
-                        child: const Text(
-                          'Carte des poubelles',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Color.fromARGB(255, 83, 83, 83),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  
-                  // Infobulle personnalisée
-                  if (showInfoWindow && selectedBin != null)
-                    Positioned(
-                      bottom: 180,
-                      left: 20,
-                      right: 20,
-                      child: _buildTrashBinInfoWindow(selectedBin!),
-                    ),
-                  
-                  // Bouton d'action flottant
-                    Positioned(
-                      bottom: 20,
-                      right: 20,
-                      child: SizedBox(
-                        width: 60,  
-                        height: 60,  
-                        child: Material(
-                          color: AppColors.primaryColor,
-                          // Voici où vous pouvez personnaliser le rayon
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30), 
-                          ),
-                          elevation: 4,
-                          child: InkWell(
-                            onTap: () {
-                              // Centrer la carte sur la position actuelle
-                              if (_currentPosition != null) {
-                                _mapController.move(
-                                  latlong.LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
-                                  18,
-                                );
-                              }
-                            },
-                            // Pour avoir un effet d'encre (ripple) avec le même rayon
-                            borderRadius: BorderRadius.circular(30), 
-                            child: const Center(
-                              child: Icon(
-                                Icons.my_location_rounded,
-                                color: Colors.white,
-                                size: 28,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
+                ),
               ),
             ),
-            
-            // Barre de navigation inférieure
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.3),
-                    spreadRadius: 1,
-                    blurRadius: 5,
+          ),
+          
+          // Infobulle personnalisée
+          if (showInfoWindow && selectedBin != null)
+            Positioned(
+              bottom: 130, // Ajusté pour être au-dessus de la barre de navigation
+              left: 20,
+              right: 20,
+              child: _buildTrashBinInfoWindow(selectedBin!),
+            ),
+          
+          // Bouton d'action flottant
+          Positioned(
+            bottom: 100, // Ajusté pour être au-dessus de la barre de navigation
+            right: 20,
+            child: SizedBox(
+              width: 60,
+              height: 60,
+              child: Material(
+                color: AppColors.primaryColor,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                elevation: 4,
+                child: InkWell(
+                  onTap: () {
+                    if (_currentPosition != null) {
+                      _mapController.move(
+                        latlong.LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
+                        18,
+                      );
+                    }
+                  },
+                  borderRadius: BorderRadius.circular(30),
+                  child: const Center(
+                    child: Icon(
+                      Icons.my_location_rounded,
+                      color: Colors.white,
+                      size: 28,
+                    ),
                   ),
-                ],
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _buildNavBarItem(Icons.person_outline, true),
-                  _buildNavBarItem(Icons.grid_view, false),
-                  const SizedBox(width: 60), // Espace pour le bouton d'action
-                  _buildNavBarItem(Icons.message_outlined, false),
-                  _buildNavBarItem(Icons.notifications_outlined, false),
-                ],
+                ),
               ),
             ),
-          ],
-        ),
+          ),
+          
+          // NavBar flottante en bas (par-dessus tout)
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: NavBarAvecPlus(
+              initialPage: 1, // Icône de carte sélectionnée
+              onPageChanged: (index) {
+                // Logique de navigation entre les différentes pages
+                switch (index) {
+                  case 0:
+                    Navigator.pushReplacementNamed(context, '/home');
+                    break;
+                  case 1:
+                    // Déjà sur cette page
+                    break;
+                  case 3:
+                    Navigator.pushReplacementNamed(context, '/messages');
+                    break;
+                  case 4:
+                    Navigator.pushReplacementNamed(context, '/profile');
+                    break;
+                }
+              },
+              onPlusButtonPressed: () {
+                // Action pour le bouton + (ajouter une nouvelle poubelle)
+                print("Ajouter une nouvelle poubelle");
+              },
+              icons: const [
+                Icons.home_outlined,
+                Icons.map_outlined,
+                Icons.add,
+                Icons.message_outlined,
+                Icons.person_outline,
+              ],
+              colors: const [
+                AppColors.primaryColor,
+                AppColors.primaryColor,
+                AppColors.primaryColor,
+                AppColors.primaryColor,
+                AppColors.primaryColor,
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  /// Construit un élément de la barre de navigation
-  Widget _buildNavBarItem(IconData icon, bool isSelected) {
-    return Icon(
-      icon,
-      size: 25,
-      color: isSelected ? AppColors.primaryColor : Colors.grey,
-    );
-  }
 
   /// Construit la fenêtre d'information pour une poubelle
   Widget _buildTrashBinInfoWindow(TrashBin bin) {
