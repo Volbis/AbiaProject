@@ -171,7 +171,8 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
                     right: 0,
                     child: Center(
                       child: Container(
-                        constraints: const BoxConstraints(maxWidth: 200),
+                        width: 290,
+                        //constraints: const BoxConstraints(maxWidth: 250),
                         margin: const EdgeInsets.symmetric(horizontal: 20),
                         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                         decoration: BoxDecoration(
@@ -190,7 +191,8 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 18,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.bold,
+                            color: Color.fromARGB(255, 83, 83, 83),
                           ),
                         ),
                       ),
@@ -200,24 +202,49 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
                   // Infobulle personnalisée
                   if (showInfoWindow && selectedBin != null)
                     Positioned(
-                      bottom: 100,
+                      bottom: 180,
                       left: 20,
                       right: 20,
                       child: _buildTrashBinInfoWindow(selectedBin!),
                     ),
                   
                   // Bouton d'action flottant
-                  Positioned(
-                    bottom: 20,
-                    right: 20,
-                    child: FloatingActionButton(
-                      backgroundColor: AppColors.primaryColor,
-                      child: const Icon(Icons.add, color: Colors.white),
-                      onPressed: () {
-                        // Action pour ajouter une nouvelle poubelle
-                      },
+                    Positioned(
+                      bottom: 20,
+                      right: 20,
+                      child: SizedBox(
+                        width: 60,  
+                        height: 60,  
+                        child: Material(
+                          color: AppColors.primaryColor,
+                          // Voici où vous pouvez personnaliser le rayon
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30), 
+                          ),
+                          elevation: 4,
+                          child: InkWell(
+                            onTap: () {
+                              // Centrer la carte sur la position actuelle
+                              if (_currentPosition != null) {
+                                _mapController.move(
+                                  latlong.LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
+                                  18,
+                                );
+                              }
+                            },
+                            // Pour avoir un effet d'encre (ripple) avec le même rayon
+                            borderRadius: BorderRadius.circular(30), 
+                            child: const Center(
+                              child: Icon(
+                                Icons.my_location_rounded,
+                                color: Colors.white,
+                                size: 28,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
                 ],
               ),
             ),
@@ -315,7 +342,7 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
 
 class TrashBin {
   final String id;
-  final latlong.LatLng latLng; // Utilisez latlong.LatLng ici
+  final latlong.LatLng latLng; 
   final String type;
   final String address;
 
