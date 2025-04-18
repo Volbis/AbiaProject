@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../controllers/auth_controller.dart';
 import 'package:abiaproject/common/theme/app_theme.dart';
+import '../screens/verification_success_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   final AuthController authController;
@@ -21,27 +22,37 @@ class _LoginScreenState extends State<LoginScreen> {
       _isLoading = true;
     });
     
-    // Utiliser le contrôleur pour la logique de connexion
-    final success = await widget.authController.login(
-      _emailController.text,
-      _passwordController.text,
-    );
-    
-    setState(() {
-      _isLoading = false;
-    });
-    
-    if (success && context.mounted) {
-      // Navigation vers le dashboard
-      Navigator.pushReplacementNamed(context, '/dashboard');
-    } else if (context.mounted) {
-      // Afficher un message d'erreur
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Échec de la connexion')),
+      // Utiliser le contrôleur pour la logique de connexion
+      final success = await widget.authController.login(
+        _emailController.text,
+        _passwordController.text,
       );
+      print(success);
+      
+      setState(() {
+        _isLoading = false;
+      });
+      
+      if (success && mounted) {
+        // Afficher l'écran de confirmation au lieu de naviguer directement
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => VerificationSuccessScreen(
+              onContinue: () {
+                // Lors du clic sur Continue, naviguer vers le dashboard
+                //Navigator.pushReplacementNamed(context, '/dashboard');
+              },
+            ),
+          ),
+        );
+      } else if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Échec de la connexion')),
+        );
+      }
     }
-  }
-
+  
   void _handleGoogleLogin() async {
      
     setState(() {
@@ -205,7 +216,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 32),
 
-              // Bouton Continuer
+              // Bouton Se connecter
               SizedBox(
                 width: 200,
                 child: ElevatedButton(
