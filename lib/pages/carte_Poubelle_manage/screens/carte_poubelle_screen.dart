@@ -1,15 +1,15 @@
+import 'package:abiaproject/common/theme/app_theme.dart';
 import 'package:abiaproject/pages/carte_Poubelle_manage/controllers/carte_poubelle_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:google_maps_flutter_platform_interface/src/types/location.dart';
 import 'package:latlong2/latlong.dart' as latlong;
 import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
-import 'package:location/location.dart';
-import 'package:custom_info_window/custom_info_window.dart';
 import 'package:geolocator/geolocator.dart';
 
 class TrashMapScreen extends StatefulWidget {
-  const TrashMapScreen({Key? key, required TrashMapController trashMapController}) : super(key: key);
+  final TrashMapController trashMapController;
+  
+  const TrashMapScreen({Key? key, required this.trashMapController}) : super(key: key);
 
   @override
   State<TrashMapScreen> createState() => _TrashMapScreenState();
@@ -17,21 +17,25 @@ class TrashMapScreen extends StatefulWidget {
 
 class _TrashMapScreenState extends State<TrashMapScreen> {
   final MapController _mapController = MapController();
-  final CustomInfoWindowController _customInfoWindowController = CustomInfoWindowController();
   Position? _currentPosition;
   bool _loading = true;
+  
+  // Variables pour l'infobulle personnalisée
+  TrashBin? selectedBin;
+  bool showInfoWindow = false;
 
-  // Utiliser latlong.LatLng au lieu de LatLng
+  // Utiliser latlong.LatLng pour la latitude et la longitude
+  // Liste des poubelles 
   final List<TrashBin> trashBins = [
     TrashBin(
       id: '1',
-      latLng: latlong.LatLng(48.8566, 2.3522), // Utilisez latlong.LatLng
+      latLng: latlong.LatLng(48.8566, 2.3522),
       type: 'Recyclables',
       address: 'Rue Victor Brault',
     ),
     TrashBin(
       id: '2',
-      latLng: latlong.LatLng(48.8570, 2.3510), // Utilisez latlong.LatLng
+      latLng: latlong.LatLng(48.8570, 2.3510), 
       type: 'Ordures ménagères',
       address: 'Rue Wilson',
     ),
@@ -45,7 +49,6 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
 
   @override
   void dispose() {
-    _customInfoWindowController.dispose();
     super.dispose();
   }
 
@@ -93,35 +96,27 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Titre de la page
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              alignment: Alignment.center,
-              child: const Text(
-                'Carte des poubelles',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            
             // Carte principale
             Expanded(
               child: Stack(
                 children: [
+
+                  // La carte en arrière-plan
                   FlutterMap(
                     mapController: _mapController,
                     options: MapOptions(
                       initialCenter: _currentPosition != null
-                          ? latlong.LatLng(_currentPosition!.latitude, _currentPosition!.longitude) // Utilisez latlong.LatLng
-                          : latlong.LatLng(48.8566, 2.3522), // Utilisez latlong.LatLng
-                      initialZoom: 15,
+                          ? latlong.LatLng(_currentPosition!.latitude, _currentPosition!.longitude)
+                          : latlong.LatLng(48.8566, 2.3522),
+                      initialZoom: 18,
                       onTap: (tapPosition, point) {
-                        _customInfoWindowController.hideInfoWindow!();
+                        setState(() {
+                          showInfoWindow = false;
+                        });
                       },
                     ),
                     children: [
+
                       // La couche de la carte OpenStreetMap
                       TileLayer(
                         urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
@@ -132,7 +127,7 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
                       CurrentLocationLayer(
                         style: const LocationMarkerStyle(
                           marker: DefaultLocationMarker(
-                            color: Colors.blue,
+                            color: AppColors.primaryColor,
                             child: Icon(
                               Icons.person,
                               color: Colors.white,
@@ -152,16 +147,14 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
                             point: bin.latLng,
                             child: GestureDetector(
                               onTap: () {
-                                // Si vous avez une erreur ici, assurez-vous que custom_info_window 
-                                // est compatible avec latlong2.LatLng ou convertissez les coordonnées
-                                _customInfoWindowController.addInfoWindow!(
-                                  _buildTrashBinInfoWindow(bin),
-                                  bin.latLng as LatLng,
-                                );
+                                setState(() {
+                                  selectedBin = bin;
+                                  showInfoWindow = true;
+                                });
                               },
                               child: const Icon(
-                                Icons.delete_outline,
-                                color: Colors.green,
+                                Icons.delete_outline_rounded,
+                                color: AppColors.primaryColor,
                                 size: 30,
                               ),
                             ),
@@ -171,20 +164,54 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
                     ],
                   ),
                   
-                  // Fenêtre d'information pour les poubelles
-                  CustomInfoWindow(
-                    controller: _customInfoWindowController,
-                    height: 100,
-                    width: 200,
-                    offset: 35,
+                  // Titre flottant en haut
+                  Positioned(
+                    top: 25,
+                    left: 0,
+                    right: 0,
+                    child: Center(
+                      child: Container(
+                        constraints: const BoxConstraints(maxWidth: 200),
+                        margin: const EdgeInsets.symmetric(horizontal: 20),
+                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                        decoration: BoxDecoration(
+                          color: AppColors.cardBackground.withOpacity(0.6),
+                          borderRadius: BorderRadius.circular(9),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 5,
+                              spreadRadius: 1,
+                            )
+                          ],
+                        ),
+                        child: const Text(
+                          'Carte des poubelles',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
+                  
+                  // Infobulle personnalisée
+                  if (showInfoWindow && selectedBin != null)
+                    Positioned(
+                      bottom: 100,
+                      left: 20,
+                      right: 20,
+                      child: _buildTrashBinInfoWindow(selectedBin!),
+                    ),
                   
                   // Bouton d'action flottant
                   Positioned(
                     bottom: 20,
                     right: 20,
                     child: FloatingActionButton(
-                      backgroundColor: Colors.blue,
+                      backgroundColor: AppColors.primaryColor,
                       child: const Icon(Icons.add, color: Colors.white),
                       onPressed: () {
                         // Action pour ajouter une nouvelle poubelle
@@ -225,14 +252,16 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
     );
   }
 
+  /// Construit un élément de la barre de navigation
   Widget _buildNavBarItem(IconData icon, bool isSelected) {
     return Icon(
       icon,
       size: 25,
-      color: isSelected ? Colors.blue : Colors.grey,
+      color: isSelected ? AppColors.primaryColor : Colors.grey,
     );
   }
 
+  /// Construit la fenêtre d'information pour une poubelle
   Widget _buildTrashBinInfoWindow(TrashBin bin) {
     return Container(
       decoration: BoxDecoration(
@@ -262,8 +291,18 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 TextButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    // Action pour voir les détails
+                  },
                   child: const Text('Détails'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    setState(() {
+                      showInfoWindow = false;
+                    });
+                  },
+                  child: const Text('Fermer'),
                 ),
               ],
             ),
