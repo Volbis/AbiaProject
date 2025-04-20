@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:abiaproject/common/theme/app_theme.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 /// Une barre de navigation flottante avec un bouton plus au centre et une forme incurvée.
 /// Ce widget est conçu pour être utilisé comme bottomNavigationBar dans un Scaffold.
@@ -10,26 +11,23 @@ class NavBarAvecPlus extends StatefulWidget {
   /// Callback appelé quand l'utilisateur change de page
   final Function(int) onPageChanged;
   
-  /// Liste des icônes à afficher dans la barre (doit contenir 5 icônes)
-  final List<IconData> icons;
+  /// Liste des chemins d'icônes SVG à afficher dans la barre (doit contenir 5 éléments)
+  final List<dynamic> icons;
   
   /// Liste des couleurs pour chaque icône (doit correspondre à la longueur de icons)
   final List<Color> colors;
   
   /// Callback appelé quand l'utilisateur appuie sur le bouton + central
   final Function? onPlusButtonPressed;
+  
+  /// Indique si les icônes sont des SVG (true) ou des IconData (false)
+  final bool useSvgIcons;
 
   const NavBarAvecPlus({
     super.key,
     this.initialPage = 0,
     required this.onPageChanged,
-    this.icons = const [
-      Icons.home_outlined,
-      Icons.map_outlined,
-      Icons.add, // Cet icône sera caché par le bouton flottant
-      Icons.message_outlined,
-      Icons.person_outlined,
-    ],
+    required this.icons,
     this.colors = const [
       Colors.blue,
       Colors.blue,
@@ -38,6 +36,7 @@ class NavBarAvecPlus extends StatefulWidget {
       Colors.blue,
     ],
     this.onPlusButtonPressed,
+    this.useSvgIcons = false,
   });
 
   @override
@@ -116,7 +115,7 @@ class _NavBarAvecPlusState extends State<NavBarAvecPlus> with SingleTickerProvid
                     painter: NavBarPainter(),
                   ),
                   
-                  // Contenu de la barre (icônes)
+                  // Contenu de la barre (icônes) - APPROCHE DIRECTE SANS _buildIconButton
                   Padding(
                     padding: const EdgeInsets.only(top: 15),
                     child: Row(
@@ -127,24 +126,44 @@ class _NavBarAvecPlusState extends State<NavBarAvecPlus> with SingleTickerProvid
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
+                              // Première icône (index 0)
                               IconButton(
-                                icon: Icon(
-                                  widget.icons[0],
-                                  color: currentPage == 0 ? 
-                                    (widget.colors.isNotEmpty ? widget.colors[0] : primaryColor) : 
-                                    unselectedColor,
-                                  size: 24,
-                                ),
+                                icon: widget.useSvgIcons
+                                    ? SvgPicture.asset(
+                                        'assets/icon_svg/map.svg',
+                                        width: 24,
+                                        height: 24,
+                                        colorFilter: ColorFilter.mode(
+                                          currentPage == 0 ? widget.colors[0] : unselectedColor,
+                                          BlendMode.srcIn
+                                        ),
+                                      )
+                                    : Icon(
+                                        widget.icons[0] as IconData,
+                                        color: currentPage == 0 ? widget.colors[0] : unselectedColor,
+                                        size: 30,
+                                      ),
                                 onPressed: () => changePage(0),
                               ),
+                              
+                              // Deuxième icône (index 1)
                               IconButton(
-                                icon: Icon(
-                                  widget.icons[1],
-                                  color: currentPage == 1 ? 
-                                    (widget.colors.length > 1 ? widget.colors[1] : primaryColor) : 
-                                    unselectedColor,
-                                  size: 24,
-                                ),
+                                icon: widget.useSvgIcons
+                                    ? SvgPicture.asset(
+                                        'assets/icon_svg/notif.svg',
+                                        width: 24,
+                                        height: 24,
+                                        colorFilter: ColorFilter.mode(
+                                          currentPage == 1 ? widget.colors[1] : unselectedColor,
+                                          BlendMode.srcIn
+                                        ),
+                                      )
+                                    : Icon(
+                                        widget.icons[1] as IconData,
+                                        color: currentPage == 1 ? widget.colors[1] : unselectedColor,
+                                        size: 30,
+                                        weight: 600,
+                                      ),
                                 onPressed: () => changePage(1),
                               ),
                             ],
@@ -159,24 +178,46 @@ class _NavBarAvecPlusState extends State<NavBarAvecPlus> with SingleTickerProvid
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
+                              // Quatrième icône (index 3)
                               IconButton(
-                                icon: Icon(
-                                  widget.icons[3],
-                                  color: currentPage == 3 ? 
-                                    (widget.colors.length > 3 ? widget.colors[3] : primaryColor) : 
-                                    unselectedColor,
-                                  size: 24,
-                                ),
+                                icon: widget.useSvgIcons
+                                    ? SvgPicture.asset(
+                                        'assets/icon_svg/stats.svg',
+                                        width: 24,
+                                        height: 24,
+                                        colorFilter: ColorFilter.mode(
+                                          currentPage == 3 ? widget.colors[3] : unselectedColor,
+                                          BlendMode.srcIn
+                                        ),
+                                      )
+                                    : Icon(
+                                        widget.icons[3] as IconData,
+                                        color: currentPage == 3 ? widget.colors[3] : unselectedColor,
+                                        size: 30,
+                                        weight: 600,
+                                      ),
                                 onPressed: () => changePage(3),
                               ),
+                              
+                              // Cinquième icône (index 4)
                               IconButton(
-                                icon: Icon(
-                                  widget.icons[4],
-                                  color: currentPage == 4 ? 
-                                    (widget.colors.length > 4 ? widget.colors[4] : primaryColor) : 
-                                    unselectedColor,
-                                  size: 24,
-                                ),
+                                icon: widget.useSvgIcons
+                                    ? SvgPicture.asset(
+                                        'assets/icon_svg/truck.svg',
+                                        width: 24,
+                                        height: 24,
+                                        colorFilter: ColorFilter.mode(
+                                          currentPage == 4 ? widget.colors[4] : unselectedColor,
+                                          BlendMode.srcIn
+                                        ),
+                                      )
+                                    : Icon(
+                                        widget.icons[4] as IconData,
+                                        color: currentPage == 4 ? widget.colors[4] : unselectedColor,
+                                        size: 30,
+                                        opticalSize: 20,
+                                        weight: 600,
+                                      ),
                                 onPressed: () => changePage(4),
                               ),
                             ],
@@ -211,11 +252,18 @@ class _NavBarAvecPlusState extends State<NavBarAvecPlus> with SingleTickerProvid
                   ],
                 ),
                 child: IconButton(
-                  icon: const Icon(
-                    Icons.add,
-                    color: Colors.white,
-                    size: 30,
-                  ),
+                  icon: widget.useSvgIcons 
+                      ? SvgPicture.asset(
+                          'assets/icon_svg/add.svg', // Chemin fixe pour l'icône +
+                          colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                          height: 24,
+                          width: 24,
+                        )
+                      : const Icon(
+                          Icons.add,
+                          color: Colors.white,
+                          size: 30,
+                        ),
                   onPressed: () {
                     if (widget.onPlusButtonPressed != null) {
                       widget.onPlusButtonPressed!();
@@ -229,6 +277,8 @@ class _NavBarAvecPlusState extends State<NavBarAvecPlus> with SingleTickerProvid
       ),
     );
   }
+
+  // La méthode _buildIconButton est supprimée car nous n'en avons plus besoin
 }
 
 /// CustomPainter pour dessiner la forme de la barre de navigation avec le creux au centre

@@ -1,13 +1,14 @@
 import 'package:abiaproject/common/theme/app_theme.dart';
 import 'package:abiaproject/pages/carte_Poubelle_manage/controllers/carte_poubelle_controller.dart';
 import 'package:abiaproject/partagés/widgets_partagés/nav_bar_avec_plus.dart';
-
+import 'package:flutter_svg/flutter_svg.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart' as latlong;
 import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:material_symbols_icons/material_symbols_icons.dart';
 
 class TrashMapScreen extends StatefulWidget {
   final TrashMapController trashMapController;
@@ -240,7 +241,6 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
               ),
             ),
           ),
-          
           // NavBar flottante en bas (par-dessus tout)
           Positioned(
             bottom: 0,
@@ -269,12 +269,13 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
                 // Action pour le bouton + (ajouter une nouvelle poubelle)
                 print("Ajouter une nouvelle poubelle");
               },
+              useSvgIcons: false, // Set this to true to use SVG icons
               icons: const [
-                Icons.map,
-                Icons.map_outlined,
+                Symbols.distance_rounded,
+                Icons.bar_chart_rounded,
                 Icons.add,
-                Icons.message_outlined,
-                Icons.person_outline,
+                Symbols.delivery_truck_bolt_rounded,
+                Symbols.notifications_unread_rounded,
               ],
               colors: const [
                 AppColors.primaryColor,
