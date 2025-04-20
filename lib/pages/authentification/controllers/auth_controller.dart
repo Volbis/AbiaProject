@@ -8,8 +8,8 @@ class AuthController {
   // Méthode de login modifiée pour mettre à jour l'état de connexion
   Future<bool> login(String email, String password) async {
     // Déclarer des variables pour les identifiants administrateur
-    String adminEmail = "admin@example.com";
-    String adminPassword = "!Admin123";
+    String adminEmail = "admin@abia.com";
+    String adminPassword = "!Abia";
     
     // Implémenter la logique de connexion
     if (email == adminEmail && password == adminPassword) {

@@ -270,7 +270,7 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
                 print("Ajouter une nouvelle poubelle");
               },
               icons: const [
-                Icons.home_outlined,
+                Icons.map,
                 Icons.map_outlined,
                 Icons.add,
                 Icons.message_outlined,

@@ -96,7 +96,7 @@ class _NavBarAvecPlusState extends State<NavBarAvecPlus> with SingleTickerProvid
     
     // Retourne seulement le widget de navigation avec une forme incurvée
     return SizedBox(
-      height: 100,
+      height: 140,
       child: Stack(
         children: [
           // Barre de navigation avec forme personnalisée
@@ -106,13 +106,13 @@ class _NavBarAvecPlusState extends State<NavBarAvecPlus> with SingleTickerProvid
             right: 0,
             child: SizedBox(
               width: size.width,
-              height: 80,
+              height: 94,
               child: Stack(
                 clipBehavior: Clip.none,
                 children: [
                   // Forme personnalisée de la barre
                   CustomPaint(
-                    size: Size(size.width, 80),
+                    size: Size(size.width, 100),
                     painter: NavBarPainter(),
                   ),
                   
@@ -192,13 +192,13 @@ class _NavBarAvecPlusState extends State<NavBarAvecPlus> with SingleTickerProvid
           
           // Bouton + flottant
           Positioned(
-            bottom: 40, // Ajusté pour être centré dans le creux
+            bottom: 55, // Ajusté pour être centré dans le creux
             left: 0,
             right: 0,
             child: Center(
               child: Container(
-                width: 56,
-                height: 56,
+                width: 60,
+                height: 60,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: const Color(0xFF4F80FF), // Couleur bleue comme dans l'image
