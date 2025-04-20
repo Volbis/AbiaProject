@@ -7,6 +7,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 class NavBarAvecPlus extends StatefulWidget {
   /// L'index initial de la page sélectionnée
   final int initialPage;
+
+  /// Liste des noms à afficher sous chaque icône
+  final List<String> iconLabels;
   
   /// Callback appelé quand l'utilisateur change de page
   final Function(int) onPageChanged;
@@ -35,6 +38,7 @@ class NavBarAvecPlus extends StatefulWidget {
       Colors.blue,
       Colors.blue,
     ],
+    this.iconLabels = const ['Maps', 'Stats', 'Add', 'Delivery', 'Notifications'],
     this.onPlusButtonPressed,
     this.useSvgIcons = false,
   });
@@ -105,13 +109,13 @@ class _NavBarAvecPlusState extends State<NavBarAvecPlus> with SingleTickerProvid
             right: 0,
             child: SizedBox(
               width: size.width,
-              height: 94,
+              height: 100,
               child: Stack(
                 clipBehavior: Clip.none,
                 children: [
                   // Forme personnalisée de la barre
                   CustomPaint(
-                    size: Size(size.width, 100),
+                    size: Size(size.width, 150),
                     painter: NavBarPainter(),
                   ),
                   
@@ -127,45 +131,74 @@ class _NavBarAvecPlusState extends State<NavBarAvecPlus> with SingleTickerProvid
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
                               // Première icône (index 0)
-                              IconButton(
-                                icon: widget.useSvgIcons
-                                    ? SvgPicture.asset(
-                                        'assets/icon_svg/map.svg',
-                                        width: 24,
-                                        height: 24,
-                                        colorFilter: ColorFilter.mode(
-                                          currentPage == 0 ? widget.colors[0] : unselectedColor,
-                                          BlendMode.srcIn
-                                        ),
-                                      )
-                                    : Icon(
-                                        widget.icons[0] as IconData,
-                                        color: currentPage == 0 ? widget.colors[0] : unselectedColor,
-                                        size: 30,
-                                      ),
-                                onPressed: () => changePage(0),
-                              ),
-                              
+                      
+                              Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    padding: EdgeInsets.zero,
+                                    icon: widget.useSvgIcons
+                                        ? SvgPicture.asset(
+                                            'assets/icon_svg/map.svg',
+                                            width: 24,
+                                            height: 24,
+                                            colorFilter: ColorFilter.mode(
+                                              currentPage == 0 ? widget.colors[0] : unselectedColor,
+                                              BlendMode.srcIn
+                                            ),
+                                          )
+                                        : Icon(
+                                            widget.icons[0] as IconData,
+                                            color: currentPage == 0 ? widget.colors[0] : unselectedColor,
+                                            size: 30,
+                                          ),
+                                    onPressed: () => changePage(0),
+                                  ),
+                                  Text(
+                                    widget.iconLabels[0],
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: currentPage == 0 ? FontWeight.bold : FontWeight.normal,
+                                      color: currentPage == 0 ? widget.colors[0] : unselectedColor,
+                                    ),
+                                  ),
+                                ],
+                              ),                         
+                             
                               // Deuxième icône (index 1)
-                              IconButton(
-                                icon: widget.useSvgIcons
-                                    ? SvgPicture.asset(
-                                        'assets/icon_svg/notif.svg',
-                                        width: 24,
-                                        height: 24,
-                                        colorFilter: ColorFilter.mode(
-                                          currentPage == 1 ? widget.colors[1] : unselectedColor,
-                                          BlendMode.srcIn
-                                        ),
-                                      )
-                                    : Icon(
-                                        widget.icons[1] as IconData,
-                                        color: currentPage == 1 ? widget.colors[1] : unselectedColor,
-                                        size: 30,
-                                        weight: 600,
-                                      ),
-                                onPressed: () => changePage(1),
-                              ),
+                              Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    padding: EdgeInsets.zero,
+                                    icon: widget.useSvgIcons
+                                        ? SvgPicture.asset(
+                                            'assets/icon_svg/map.svg',
+                                            width: 24,
+                                            height: 24,
+                                            colorFilter: ColorFilter.mode(
+                                              currentPage == 1 ? widget.colors[1] : unselectedColor,
+                                              BlendMode.srcIn
+                                            ),
+                                          )
+                                        : Icon(
+                                            widget.icons[1] as IconData,
+                                            color: currentPage == 1 ? widget.colors[1] : unselectedColor,
+                                            size: 30,
+                                          ),
+                                    onPressed: () => changePage(1),
+                                  ),
+                                  Text(
+                                    widget.iconLabels[1],
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: currentPage == 1 ? FontWeight.bold : FontWeight.normal,
+                                      color: currentPage == 1 ? widget.colors[1] : unselectedColor,
+                                    ),
+                                  ),
+                                ],
+                              ),                         
+                           
                             ],
                           ),
                         ),
@@ -179,26 +212,39 @@ class _NavBarAvecPlusState extends State<NavBarAvecPlus> with SingleTickerProvid
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
                               // Quatrième icône (index 3)
-                              IconButton(
-                                icon: widget.useSvgIcons
-                                    ? SvgPicture.asset(
-                                        'assets/icon_svg/stats.svg',
-                                        width: 24,
-                                        height: 24,
-                                        colorFilter: ColorFilter.mode(
-                                          currentPage == 3 ? widget.colors[3] : unselectedColor,
-                                          BlendMode.srcIn
-                                        ),
-                                      )
-                                    : Icon(
-                                        widget.icons[3] as IconData,
-                                        color: currentPage == 3 ? widget.colors[3] : unselectedColor,
-                                        size: 30,
-                                        weight: 600,
-                                      ),
-                                onPressed: () => changePage(3),
-                              ),
-                              
+                              Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    padding: EdgeInsets.zero,
+                                    icon: widget.useSvgIcons
+                                        ? SvgPicture.asset(
+                                            'assets/icon_svg/map.svg',
+                                            width: 24,
+                                            height: 24,
+                                            colorFilter: ColorFilter.mode(
+                                              currentPage == 1 ? widget.colors[1] : unselectedColor,
+                                              BlendMode.srcIn
+                                            ),
+                                          )
+                                        : Icon(
+                                            widget.icons[1] as IconData,
+                                            color: currentPage == 1 ? widget.colors[1] : unselectedColor,
+                                            size: 30,
+                                          ),
+                                    onPressed: () => changePage(1),
+                                  ),
+                                  Text(
+                                    widget.iconLabels[1],
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: currentPage == 1 ? FontWeight.bold : FontWeight.normal,
+                                      color: currentPage == 1 ? widget.colors[1] : unselectedColor,
+                                    ),
+                                  ),
+                                ],
+                              ),                         
+                                  
                               // Cinquième icône (index 4)
                               IconButton(
                                 icon: widget.useSvgIcons
