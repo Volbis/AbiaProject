@@ -320,7 +320,7 @@ class _NavBarAvecPlusState extends State<NavBarAvecPlus> with SingleTickerProvid
           
           // Bouton + flottant
           Positioned(
-            bottom: 55, // Ajusté pour être centré dans le creux
+            bottom: 63, // Ajusté pour être centré dans le creux
             left: 0,
             right: 0,
             child: Center(

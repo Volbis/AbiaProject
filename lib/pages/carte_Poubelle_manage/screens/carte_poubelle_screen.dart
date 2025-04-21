@@ -198,18 +198,35 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
             ),
           ),
           
-          // Infobulle personnalisée
-          if (showInfoWindow && selectedBin != null)
-            Positioned(
-              bottom: 130, // Ajusté pour être au-dessus de la barre de navigation
-              left: 20,
-              right: 20,
-              child: _buildTrashBinInfoWindow(selectedBin!),
-            ),
-          
+        // Infobulle personnalisée
+        if (showInfoWindow && selectedBin != null)
+          StreamBuilder(
+            stream: Stream.periodic(const Duration(milliseconds: 100)),
+            builder: (context, _) {
+              // Conversion des coordonnées géographiques en coordonnées d'écran
+              // Cette conversion est actualisée périodiquement pour tenir compte des mouvements de la carte
+              final pxPoint = _mapController.camera.latLngToScreenPoint(selectedBin!.latLng);
+              
+              if (pxPoint == null) return const SizedBox.shrink();
+              
+              // Calcul des décalages pour positionner l'infobulle au-dessus du marqueur
+              final infoWindowWidth = 280.0;
+              final infoWindowHeight = 120.0;
+              final markerHeight = 40.0; // Hauteur estimée du marqueur
+              
+              // Position de l'infobulle (centrée horizontalement, au-dessus du marqueur)
+              return Positioned(
+                left: pxPoint.x - (infoWindowWidth / 2),
+                top: pxPoint.y - infoWindowHeight - markerHeight,
+                width: infoWindowWidth,
+                child: _buildTrashBinInfoWindow(selectedBin!),
+              );
+            },
+          ),
+                  
           // Bouton d'action flottant
           Positioned(
-            bottom: 100, // Ajusté pour être au-dessus de la barre de navigation
+            bottom: 120, // Ajusté pour être au-dessus de la barre de navigation
             right: 20,
             child: SizedBox(
               width: 60,
@@ -290,7 +307,6 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
       ),
     );
   }
-
 
   /// Construit la fenêtre d'information pour une poubelle
   Widget _buildTrashBinInfoWindow(TrashBin bin) {
