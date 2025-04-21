@@ -38,7 +38,7 @@ class NavBarAvecPlus extends StatefulWidget {
       Colors.blue,
       Colors.blue,
     ],
-    this.iconLabels = const ['Maps', 'Stats', 'Add', 'Delivery', 'Notifications'],
+    this.iconLabels = const ['Carte', 'Stats', 'Add', 'Collecte', 'Notifs'],
     this.onPlusButtonPressed,
     this.useSvgIcons = false,
   });
@@ -131,7 +131,6 @@ class _NavBarAvecPlusState extends State<NavBarAvecPlus> with SingleTickerProvid
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
                               // Première icône (index 0)
-                      
                               Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
@@ -154,12 +153,19 @@ class _NavBarAvecPlusState extends State<NavBarAvecPlus> with SingleTickerProvid
                                           ),
                                     onPressed: () => changePage(0),
                                   ),
-                                  Text(
-                                    widget.iconLabels[0],
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: currentPage == 0 ? FontWeight.bold : FontWeight.normal,
-                                      color: currentPage == 0 ? widget.colors[0] : unselectedColor,
+                                  // N'affiche le texte que si l'icône est sélectionnée
+                                  Visibility(
+                                    visible: currentPage == 0,
+                                    maintainSize: false,
+                                    maintainAnimation: false,
+                                    maintainState: false,
+                                    child: Text(
+                                      widget.iconLabels[0],
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                        color: widget.colors[0],
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -188,12 +194,19 @@ class _NavBarAvecPlusState extends State<NavBarAvecPlus> with SingleTickerProvid
                                           ),
                                     onPressed: () => changePage(1),
                                   ),
-                                  Text(
-                                    widget.iconLabels[1],
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: currentPage == 1 ? FontWeight.bold : FontWeight.normal,
-                                      color: currentPage == 1 ? widget.colors[1] : unselectedColor,
+                                  // N'affiche le texte que si l'icône est sélectionnée
+                                  Visibility(
+                                    visible: currentPage == 1,
+                                    maintainSize: false,
+                                    maintainAnimation: false,
+                                    maintainState: false,
+                                    child: Text(
+                                      widget.iconLabels[1],
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                        color: widget.colors[1],
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -223,49 +236,77 @@ class _NavBarAvecPlusState extends State<NavBarAvecPlus> with SingleTickerProvid
                                             width: 24,
                                             height: 24,
                                             colorFilter: ColorFilter.mode(
-                                              currentPage == 1 ? widget.colors[1] : unselectedColor,
+                                              currentPage == 3 ? widget.colors[3] : unselectedColor,
                                               BlendMode.srcIn
                                             ),
                                           )
                                         : Icon(
-                                            widget.icons[1] as IconData,
-                                            color: currentPage == 1 ? widget.colors[1] : unselectedColor,
+                                            widget.icons[3] as IconData,
+                                            color: currentPage == 3 ? widget.colors[3] : unselectedColor,
                                             size: 30,
                                           ),
-                                    onPressed: () => changePage(1),
+                                    onPressed: () => changePage(3),
                                   ),
-                                  Text(
-                                    widget.iconLabels[1],
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: currentPage == 1 ? FontWeight.bold : FontWeight.normal,
-                                      color: currentPage == 1 ? widget.colors[1] : unselectedColor,
+                                  // N'affiche le texte que si l'icône est sélectionnée
+                                  Visibility(
+                                    visible: currentPage == 3,
+                                    maintainSize: false,
+                                    maintainAnimation: false,
+                                    maintainState: false,
+                                    child: Text(
+                                      widget.iconLabels[3],
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                        color: widget.colors[3],
+                                      ),
                                     ),
                                   ),
                                 ],
                               ),                         
                                   
                               // Cinquième icône (index 4)
-                              IconButton(
-                                icon: widget.useSvgIcons
-                                    ? SvgPicture.asset(
-                                        'assets/icon_svg/truck.svg',
-                                        width: 24,
-                                        height: 24,
-                                        colorFilter: ColorFilter.mode(
-                                          currentPage == 4 ? widget.colors[4] : unselectedColor,
-                                          BlendMode.srcIn
-                                        ),
-                                      )
-                                    : Icon(
-                                        widget.icons[4] as IconData,
-                                        color: currentPage == 4 ? widget.colors[4] : unselectedColor,
-                                        size: 30,
-                                        opticalSize: 20,
-                                        weight: 600,
+                              Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    padding: EdgeInsets.zero,
+                                    icon: widget.useSvgIcons
+                                        ? SvgPicture.asset(
+                                            'assets/icon_svg/map.svg',
+                                            width: 24,
+                                            height: 24,
+                                            colorFilter: ColorFilter.mode(
+                                              currentPage == 4 ? widget.colors[4] : unselectedColor,
+                                              BlendMode.srcIn
+                                            ),
+                                          )
+                                        : Icon(
+                                            widget.icons[4] as IconData,
+                                            color: currentPage == 4 ? widget.colors[4] : unselectedColor,
+                                            size: 30,
+                                            opticalSize: 1,
+                                          ),
+                                    onPressed: () => changePage(4),
+                                  ),
+                                  // N'affiche le texte que si l'icône est sélectionnée
+                                  Visibility(
+                                    visible: currentPage == 4,
+                                    maintainSize: false,
+                                    maintainAnimation: false,
+                                    maintainState: false,
+                                    child: Text(
+                                      widget.iconLabels[4],
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                        color: widget.colors[4],
                                       ),
-                                onPressed: () => changePage(4),
-                              ),
+                                    ),
+                                  ),
+                                ],
+                              ),                         
+                          
                             ],
                           ),
                         ),
@@ -323,8 +364,6 @@ class _NavBarAvecPlusState extends State<NavBarAvecPlus> with SingleTickerProvid
       ),
     );
   }
-
-  // La méthode _buildIconButton est supprimée car nous n'en avons plus besoin
 }
 
 /// CustomPainter pour dessiner la forme de la barre de navigation avec le creux au centre
