@@ -403,7 +403,7 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
 Widget _buildTrashBinInfoWindow(TrashBin bin) {
   return Container(
     decoration: BoxDecoration(
-      color: const Color.fromARGB(160, 238, 230, 255), // Couleur de fond violette claire
+      color: const Color.fromARGB(230, 238, 230, 255), // Couleur de fond violette claire
       borderRadius: BorderRadius.circular(20),
       boxShadow: [
         BoxShadow(
