@@ -36,15 +36,96 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
       latLng: latlong.LatLng(48.8566, 2.3522),
       type: 'Recyclables',
       address: 'Rue Victor Brault',
+      niveauDeRemplissage: NiveauDeRemplissage.full,
     ),
     TrashBin(
       id: '2',
       latLng: latlong.LatLng(48.8570, 2.3510), 
       type: 'Ordures ménagères',
       address: 'Rue Wilson',
+      niveauDeRemplissage: NiveauDeRemplissage.medium,
     ),
   ];
 
+  // Couleur de remplissage en fonction du niveau
+  Color _getFillLevelColor(NiveauDeRemplissage? level) {
+    // Gestion du cas où level est null
+    if (level == null) {
+      return Colors.grey; // Couleur par défaut si null
+    }
+    
+    switch (level) {
+      case NiveauDeRemplissage.empty:
+        return Colors.green;
+      case NiveauDeRemplissage.medium:
+        return Colors.amber;
+      case NiveauDeRemplissage.full:
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  // De même pour la méthode _getFillLevelText
+  String _getFillLevelText(NiveauDeRemplissage? level) {
+    // Gestion du cas où level est null
+    if (level == null) {
+      return "Inconnu"; // Texte par défaut si null
+    }
+    
+    switch (level) {
+      case NiveauDeRemplissage.empty:
+        return "Vide";
+      case NiveauDeRemplissage.medium:
+        return "À moitié pleine";
+      case NiveauDeRemplissage.full:
+        return "Pleine";
+      default:
+        return "Inconnu";
+    }
+  }
+      
+    
+    //Mettre à jour future du niveau de remplissage
+  void updateTrashBinFillLevel(String binId, double fillPercentage) {
+    setState(() {
+      final index = trashBins.indexWhere((bin) => bin.id == binId);
+      if (index != -1) {
+        // Remplacez cette poubelle par une nouvelle avec le niveau mis à jour
+        NiveauDeRemplissage newLevel = _calculateFillLevel(fillPercentage);
+        
+        // Dans une implémentation réelle, vous mettriez à jour l'objet TrashBin lui-même
+        // Pour l'instant, nous recréons l'objet entier
+        TrashBin updatedBin = TrashBin(
+          id: trashBins[index].id,
+          latLng: trashBins[index].latLng,
+          type: trashBins[index].type,
+          address: trashBins[index].address,
+          niveauDeRemplissage: newLevel,
+        );
+        
+        // Mettre à jour la liste
+        trashBins[index] = updatedBin;
+        
+        // Si la poubelle est actuellement sélectionnée, mettre à jour également selectedBin
+        if (selectedBin?.id == binId) {
+          selectedBin = updatedBin;
+        }
+      }
+    });
+  }
+
+  NiveauDeRemplissage _calculateFillLevel(double fillPercentage) {
+    if (fillPercentage < 30) {
+      return NiveauDeRemplissage.empty;
+    } else if (fillPercentage < 70) {
+      return NiveauDeRemplissage.medium;
+    } else {
+      return NiveauDeRemplissage.full;
+    }
+  }
+
+  // Initialisation de l'état
   @override
   void initState() {
     super.initState();
@@ -103,6 +184,7 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
       body: Stack(
         children: [
           // La carte en arrière-plan (couvre tout l'écran)
+          
           FlutterMap(
             mapController: _mapController,
             options: MapOptions(
@@ -121,6 +203,8 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
               TileLayer(
                 urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                 userAgentPackageName: 'com.example.app',
+                tileProvider: NetworkTileProvider(),
+                retinaMode: true, 
               ),
               
               // Marqueur de localisation actuelle
@@ -129,12 +213,13 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
                   marker: DefaultLocationMarker(
                     color: AppColors.primaryColor,
                     child: Icon(
-                      Icons.person,
+                      Icons.person_pin,
                       color: Colors.white,
                       size: 15,
                     ),
                   ),
                   accuracyCircleColor: Colors.blue,
+                  
                 ),
               ),
               
@@ -198,32 +283,38 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
             ),
           ),
           
-        // Infobulle personnalisée
-        if (showInfoWindow && selectedBin != null)
-          StreamBuilder(
-            stream: Stream.periodic(const Duration(milliseconds: 100)),
-            builder: (context, _) {
-              // Conversion des coordonnées géographiques en coordonnées d'écran
-              // Cette conversion est actualisée périodiquement pour tenir compte des mouvements de la carte
-              final pxPoint = _mapController.camera.latLngToScreenPoint(selectedBin!.latLng);
-              
-              if (pxPoint == null) return const SizedBox.shrink();
-              
-              // Calcul des décalages pour positionner l'infobulle au-dessus du marqueur
-              final infoWindowWidth = 280.0;
-              final infoWindowHeight = 120.0;
-              final markerHeight = 40.0; // Hauteur estimée du marqueur
-              
-              // Position de l'infobulle (centrée horizontalement, au-dessus du marqueur)
-              return Positioned(
-                left: pxPoint.x - (infoWindowWidth / 2),
-                top: pxPoint.y - infoWindowHeight - markerHeight,
-                width: infoWindowWidth,
-                child: _buildTrashBinInfoWindow(selectedBin!),
-              );
-            },
-          ),
-                  
+            // Infobulle personnalisée
+          if (showInfoWindow && selectedBin != null)
+            StreamBuilder(
+              stream: Stream.periodic(const Duration(milliseconds: 100)),
+              builder: (context, _) {
+                // Vérification supplémentaire pour s'assurer que selectedBin reste non-null
+                // pendant toute la durée du Stream
+                if (selectedBin == null) return const SizedBox.shrink();
+                
+                // Copie locale sécurisée pour éviter les changements pendant l'exécution
+                final localSelectedBin = selectedBin!;
+                
+                // Conversion des coordonnées géographiques en coordonnées d'écran
+                final pxPoint = _mapController.camera.latLngToScreenPoint(localSelectedBin.latLng);
+                
+                if (pxPoint == null) return const SizedBox.shrink();
+                
+                // Calcul des décalages pour positionner l'infobulle au-dessus du marqueur
+                final infoWindowWidth = 340.0;
+                final infoWindowHeight = 200.0;
+                final markerHeight = 35.0; // Hauteur estimée du marqueur
+                
+                // Position de l'infobulle (centrée horizontalement, au-dessus du marqueur)
+                return Positioned(
+                  left: pxPoint.x - (infoWindowWidth / 2),
+                  top: pxPoint.y - infoWindowHeight - markerHeight,
+                  width: infoWindowWidth,
+                  child: _buildTrashBinInfoWindow(localSelectedBin),
+                );
+              },
+            ),  
+
           // Bouton d'action flottant
           Positioned(
             bottom: 120, // Ajusté pour être au-dessus de la barre de navigation
@@ -264,7 +355,7 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
             left: 0,
             right: 0,
             child: NavBarAvecPlus(
-              initialPage: 1, // Icône de carte sélectionnée
+              initialPage: 0, // Icône de carte sélectionnée
               onPageChanged: (index) {
                 // Logique de navigation entre les différentes pages
                 switch (index) {
@@ -309,67 +400,171 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
   }
 
   /// Construit la fenêtre d'information pour une poubelle
-  Widget _buildTrashBinInfoWindow(TrashBin bin) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.5),
-            spreadRadius: 2,
-            blurRadius: 5,
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              bin.type,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-            const SizedBox(height: 5),
-            Text(bin.address),
-            const SizedBox(height: 5),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                TextButton(
-                  onPressed: () {
-                    // Action pour voir les détails
-                  },
-                  child: const Text('Détails'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    setState(() {
-                      showInfoWindow = false;
-                    });
-                  },
-                  child: const Text('Fermer'),
-                ),
-              ],
-            ),
-          ],
+Widget _buildTrashBinInfoWindow(TrashBin bin) {
+  return Container(
+    decoration: BoxDecoration(
+      color: const Color.fromARGB(160, 238, 230, 255), // Couleur de fond violette claire
+      borderRadius: BorderRadius.circular(20),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.1),
+          spreadRadius: 1,
+          blurRadius: 6,
+          offset: const Offset(0, 2),
         ),
-      ),
-    );
-  }
+      ],
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // En-tête avec icône et texte
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: const BoxDecoration(
+            color: Color(0xFFE1D5FF), // Couleur légèrement plus foncée pour l'en-tête
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(16),
+              topRight: Radius.circular(16),
+            ),
+          ),
+          child: Row(
+            children: [
+              // Icône dans un cercle
+              Container(
+                width: 24,
+                height: 24,
+                decoration: const BoxDecoration(
+                  color: AppColors.primaryColor, // Couleur violette plus foncée
+                  shape: BoxShape.circle,
+                ),
+                child: const Center(
+                  child: Icon(
+                    Icons.delete_outline_rounded,
+                    color: Colors.white,
+                    size: 16,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              // Titre de l'infobulle
+              Text(
+                bin.type,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: AppColors.secondaryColor, // Texte violet foncé
+                ),
+              ),
+            ],
+          ),
+        ),
+        // Corps de l'infobulle
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // status de la poubelle
+              Row(
+                children: [
+                  const Text(
+                    "Statut : ",
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF6A6A6A),
+                    ),
+                  ),
+                  Container(
+                    width: 12,
+                    height: 12,
+                    decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                      color: _getFillLevelColor(bin.niveauDeRemplissage),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    _getFillLevelText(bin.niveauDeRemplissage),
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: _getFillLevelColor(bin.niveauDeRemplissage),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 8),
+              // Message principal
+              Text(
+                bin.address,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Color.fromARGB(255, 48, 48, 48),
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                "Informations supplémentaires sur cette poubelle.",
+                style: TextStyle(
+                  fontSize: 14, 
+                  
+                  color: Color(0xFF6A6A6A),
+                ),
+              ),
+              const SizedBox(height: 20), // Espace supplémentaire
+              
+              // Boutons
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+  
+                    onPressed: () {
+                      setState(() {
+                        showInfoWindow = false;
+                      });
+                    },
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: AppColors.primaryColor,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    ),
+                    child: const Text('Fermer'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      
+      ],
+    ),
+  );
 }
+
+}
+
+// Niveau de remplissage de la poubelle
+enum NiveauDeRemplissage { empty, medium, full }
 
 class TrashBin {
   final String id;
   final latlong.LatLng latLng; 
   final String type;
   final String address;
+  final NiveauDeRemplissage niveauDeRemplissage; // Niveau de remplissage de la poubelle
 
   TrashBin({
     required this.id,
     required this.latLng,
     required this.type,
     required this.address,
+    required this.niveauDeRemplissage, 
   });
 }
