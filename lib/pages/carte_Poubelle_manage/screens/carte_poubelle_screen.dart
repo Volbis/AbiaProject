@@ -25,6 +25,9 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
   Position? _currentPosition;
   bool _loading = true;
   
+    // Ajout de poubelle
+  bool _isAddingTrashBin = false;  // Mode d'ajout de poubelle
+  latlong.LatLng? _newBinPosition;  // Position sélectionnée
   // Variables pour l'infobulle personnalisée
   TrashBin? selectedBin;
   bool showInfoWindow = false;
@@ -34,21 +37,21 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
     TrashBin(
       id: 'DS24E',
       latLng: latlong.LatLng(48.8566, 2.3522),
-      type: 'Recyclables',
       address: 'Rue Victor Brault',
       status: Status.full,
-      fillPercentage: 85.0,
-      capaciteTotale: 100.0
+      fillPercentage: 100.0,
+      capaciteTotale: 100.0,
+      verrouille: true
       
     ),
     TrashBin(
       id: '32VCS',
       latLng: latlong.LatLng(48.8570, 2.3510), 
-      type: 'Ordures ménagères',
       address: 'Rue Wilson',
       status: Status.medium,
       fillPercentage: 55.0,
-      capaciteTotale: 100.0
+      capaciteTotale: 100.0,
+      verrouille: false
     ),
   ];
 
@@ -104,11 +107,12 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
         TrashBin updatedBin = TrashBin(
           id: trashBins[index].id,
           latLng: trashBins[index].latLng,
-          type: trashBins[index].type,
           address: trashBins[index].address,
           status: newLevel,
           fillPercentage: fillPercentage,
           capaciteTotale: trashBins[index].capaciteTotale,
+          seuilAlerte: trashBins[index].seuilAlerte, 
+          verrouille: trashBins[index].verrouille, 
         );
         
         // Mettre à jour la liste
@@ -202,11 +206,12 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
             TrashBin updatedBin = TrashBin(
               id: bin.id,
               latLng: bin.latLng,
-              type: bin.type,
               address: formattedAddress, // Nouvelle adresse
               status: bin.status,
               fillPercentage: bin.fillPercentage,
               capaciteTotale: bin.capaciteTotale,
+              seuilAlerte: bin.seuilAlerte,
+              verrouille: bin.verrouille,
             );
             
             // Mettre à jour la poubelle dans la liste
@@ -284,6 +289,207 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
     }
   }
   
+  // Afficher le formulaire d'ajout de poubelle
+  void _showAddTrashBinForm(BuildContext context, latlong.LatLng position) {
+  // Contrôleurs pour les champs de formulaire
+  final capaciteController = TextEditingController(text: '100.0');
+  final adresseController = TextEditingController();
+  
+  // Valeurs par défaut
+  Status statutInitial = Status.empty;
+  
+  // Récupérer l'adresse à partir des coordonnées
+  _getAddressFromCoordinates(position).then((address) {
+    if (address.isNotEmpty) {
+      adresseController.text = address;
+    }
+  });
+
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (context) => Padding(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+        left: 16, right: 16, top: 16
+      ),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              'Ajouter une nouvelle poubelle',
+              style: TextStyle(
+                fontSize: 18, 
+                fontWeight: FontWeight.bold,
+                color: AppColors.secondaryColor,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 16),
+            
+            // Capacité totale
+            TextField(
+              controller: capaciteController,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                labelText: 'Capacité totale (litres)',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            SizedBox(height: 16),
+            
+            // Statut initial
+            DropdownButtonFormField<Status>(
+              value: statutInitial,
+              decoration: InputDecoration(
+                labelText: 'Statut initial',
+                border: OutlineInputBorder(),
+              ),
+              items: [
+                DropdownMenuItem(value: Status.empty, child: Text('Vide')),
+                DropdownMenuItem(value: Status.medium, child: Text('À moitié pleine')),
+                DropdownMenuItem(value: Status.full, child: Text('Pleine')),
+              ],
+              onChanged: (value) {
+                statutInitial = value!;
+              },
+            ),
+            SizedBox(height: 16),
+            
+            // Adresse
+            TextField(
+              controller: adresseController,
+              maxLines: 2,
+              decoration: InputDecoration(
+                labelText: 'Adresse',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            SizedBox(height: 24),
+            
+            // Boutons d'action
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                // Bouton Annuler
+                TextButton(
+                  onPressed: () {
+                    // Annuler l'ajout
+                    setState(() {
+                      _isAddingTrashBin = false;
+                      _newBinPosition = null;
+                    });
+                    Navigator.pop(context);
+                  },
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppColors.secondaryColor,
+                  ),
+                  child: Text('Annuler'),
+                ),
+                // Bouton Ajouter
+                ElevatedButton(
+                  onPressed: () {
+                    // Valider et ajouter la poubelle
+                    _addNewTrashBin(
+                      position: position,
+                      capacite: double.tryParse(capaciteController.text) ?? 100.0,
+                      statut: statutInitial,
+                      adresse: adresseController.text,
+                    );
+                    Navigator.pop(context);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryColor,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: Text('Ajouter'),
+                ),
+              ],
+            ),
+            SizedBox(height: 16),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+  // Méthode pour récupérer l'adresse à partir des coordonnées
+  Future<String> _getAddressFromCoordinates(latlong.LatLng position) async {
+    try {
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+        position.latitude,
+        position.longitude
+      );
+      
+      if (placemarks.isNotEmpty) {
+        final place = placemarks.first;
+        // Utiliser la même logique de formatage que dans _updateBinAddress
+        // ...formatage de l'adresse...
+        
+        String formattedAddress = ''; 
+        // Récupérer votre code de formatage existant depuis _updateBinAddress
+        
+        return formattedAddress;
+      }
+    } catch (e) {
+      print("Erreur de géocodage: $e");
+    }
+    return '';
+  }
+
+  // Méthode pour ajouter effectivement la poubelle
+  void _addNewTrashBin({
+    required latlong.LatLng position,
+    required double capacite,
+    required Status statut,
+  required String adresse,
+  }) {
+    // Dans une application réelle, appeler l'API backend
+    // Pour l'instant, générer un ID aléatoire
+    final String newId = 'BIN${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}';
+    
+    // Calculer le taux de remplissage initial basé sur le statut
+    double fillPercentage = 0.0;
+    switch (statut) {
+      case Status.empty: fillPercentage = 10.0; break;
+      case Status.medium: fillPercentage = 50.0; break;
+      case Status.full: fillPercentage = 90.0; break;
+    }
+    
+    // Créer la nouvelle poubelle
+    final newBin = TrashBin(
+      id: newId,
+      latLng: position,
+      address: adresse,
+      status: statut,
+      fillPercentage: fillPercentage,
+      capaciteTotale: capacite,
+      seuilAlerte: 0.9,
+      verrouille: true,
+    );
+    
+    // Ajouter à la liste et rafraîchir l'UI
+    setState(() {
+      trashBins.add(newBin);
+      _isAddingTrashBin = false;
+      _newBinPosition = null;
+    });
+    
+    // Afficher une confirmation
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Poubelle ajoutée avec succès'),
+        backgroundColor: Colors.green,
+      )
+    );
+  }
+
   // Initialisation de l'état
   @override
   void initState() {
@@ -313,10 +519,20 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
                   : latlong.LatLng(48.8566, 2.3522),
               initialZoom: 18,
               onTap: (tapPosition, point) {
-                setState(() {
-                  showInfoWindow = false;
-                });
-              },
+                  if (_isAddingTrashBin) {
+                    // Mode ajout: placer un marqueur
+                    setState(() {
+                      _newBinPosition = point;
+                      // Si déjà une position sélectionnée, montrer le formulaire d'ajout
+                      _showAddTrashBinForm(context, point);
+                    });
+                  } else {
+                    // Mode normal: fermer l'infobulle
+                    setState(() {
+                      showInfoWindow = false;
+                    });
+                  }
+                },
             ),
             children: [
               // La couche de la carte OpenStreetMap
@@ -363,6 +579,35 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
                   );
                 }).toList(),
               ),
+              // Marqueur temporaire pour la nouvelle poubelle
+            if (_isAddingTrashBin && _newBinPosition != null)
+              MarkerLayer(
+                markers: [
+                  Marker(
+                    width: 40,
+                    height: 40,
+                    point: _newBinPosition!,
+                    child: Stack(
+                      children: [
+                        const Icon(
+                          Icons.delete_outline_rounded,
+                          color: AppColors.primaryColor,
+                          size: 30,
+                        ),
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.white, width: 2),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+                        
             ],
           ),
           
@@ -493,8 +738,16 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
                 }
               },
               onPlusButtonPressed: () {
-                // Action pour le bouton + (ajouter une nouvelle poubelle)
-                print("Ajouter une nouvelle poubelle");
+                setState(() {
+                  _isAddingTrashBin = true;
+                  // Afficher un message guide
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Touchez la carte pour placer une nouvelle poubelle'),
+                      duration: Duration(seconds: 3),
+                    )
+                  );
+                });
               },
               useSvgIcons: false, // Set this to true to use SVG icons
               icons: const [
@@ -585,6 +838,7 @@ Widget _buildTrashBinInfoWindow(TrashBin bin) {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(height: 12),
+
               // status de la poubelle
               Row(
                 children: [
@@ -615,9 +869,9 @@ Widget _buildTrashBinInfoWindow(TrashBin bin) {
                   ),
                 ],
               ),
- 
-              // Taux de remplissage
               const SizedBox(height: 12),
+
+                // Taux de remplissage
               Row(
                 children: [
                   const Text(
@@ -639,7 +893,35 @@ Widget _buildTrashBinInfoWindow(TrashBin bin) {
                   ),
                 ],
               ),
+              const SizedBox(height: 12),
 
+              // Etat de verrouillage
+              Row(
+                children: [
+                  const Text(
+                    "État : ",
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF6A6A6A),
+                    ),
+                  ),
+                  Icon(
+                    bin.verrouille ? Icons.lock : Icons.lock_open,
+                    size: 16,
+                    color: bin.verrouille ? Colors.red : Colors.green,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    bin.verrouille ? "Verrouillée" : "Déverrouillée",
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                              color: bin.verrouille ? Colors.red : Colors.green,
+                    ),
+                  ),
+                ],
+              ),
               const SizedBox(height: 12),
 
               // Localisation de la poubelle 
@@ -714,21 +996,23 @@ enum Status { empty, medium, full }
 class TrashBin {
   final String id;
   final latlong.LatLng latLng; 
-  final String type;
   final String address;
   final Status status; // Niveau de remplissage de la poubelle
   final double fillPercentage; // Taux de remplissage (0-100%)
   final double capaciteTotale; 
+  final double seuilAlerte;
+  final bool verrouille; 
 
 
   TrashBin({
     required this.id,
     required this.latLng, //Les coordonnées GPS de la poubelle
-    required this.type,
     required this.address,
     required this.status, 
     this.fillPercentage = 0.0,
     required this.capaciteTotale,
-   
+    this.seuilAlerte = 0.9,
+    this.verrouille = true,
+  
   });
 }

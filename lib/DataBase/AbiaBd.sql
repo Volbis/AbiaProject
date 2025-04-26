@@ -159,7 +159,7 @@ CREATE TABLE IF NOT EXISTS `poubelle` (
   `longitude` DECIMAL(11,8) NOT NULL,
   `adresse` VARCHAR(255) NOT NULL,
   `date_derniere_collecte` DATETIME NULL,
-  `seuil_alerte` FLOAT NOT NULL DEFAULT 0.8,
+  `seuil_alerte` FLOAT NOT NULL DEFAULT 0.9,
   `verrouille` BOOLEAN NOT NULL DEFAULT TRUE,
   PRIMARY KEY (`id`),
   INDEX `fk_poubelle_statut_idx` (`statut_id`),
@@ -420,7 +420,6 @@ CREATE PROCEDURE IF NOT EXISTS `sp_creer_poubelle` (
     IN p_latitude DECIMAL(10,8),
     IN p_longitude DECIMAL(11,8),
     IN p_adresse VARCHAR(255),
-    IN p_seuil_alerte FLOAT
 )
 BEGIN
     DECLARE v_statut_id TINYINT;
@@ -434,10 +433,10 @@ BEGIN
 
     INSERT INTO poubelle (
         id, capacite_totale, niveau_remplissage,
-        statut_id, latitude, longitude, adresse, seuil_alerte
+        statut_id, latitude, longitude, adresse
     ) VALUES (
         v_poubelle_id, p_capacite_totale, 0,
-        v_statut_id, p_latitude, p_longitude, p_adresse, p_seuil_alerte
+        v_statut_id, p_latitude, p_longitude, p_adresse
     );
 
     SELECT v_poubelle_id AS poubelle_id;
