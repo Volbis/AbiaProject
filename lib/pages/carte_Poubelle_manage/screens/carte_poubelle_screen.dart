@@ -36,8 +36,9 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
       latLng: latlong.LatLng(48.8566, 2.3522),
       type: 'Recyclables',
       address: 'Rue Victor Brault',
-      niveauDeRemplissage: NiveauDeRemplissage.full,
+      status: Status.full,
       fillPercentage: 85.0,
+      capaciteTotale: 100.0
       
     ),
     TrashBin(
@@ -45,24 +46,25 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
       latLng: latlong.LatLng(48.8570, 2.3510), 
       type: 'Ordures ménagères',
       address: 'Rue Wilson',
-      niveauDeRemplissage: NiveauDeRemplissage.medium,
-       fillPercentage: 55.0,
+      status: Status.medium,
+      fillPercentage: 55.0,
+      capaciteTotale: 100.0
     ),
   ];
 
   // Couleur de remplissage en fonction du niveau
-  Color _getFillLevelColor(NiveauDeRemplissage? level) {
+  Color _getFillLevelColor(Status? level) {
     // Gestion du cas où level est null
     if (level == null) {
       return Colors.grey; // Couleur par défaut si null
     }
     
     switch (level) {
-      case NiveauDeRemplissage.empty:
+      case Status.empty:
         return Colors.green;
-      case NiveauDeRemplissage.medium:
+      case Status.medium:
         return Colors.amber;
-      case NiveauDeRemplissage.full:
+      case Status.full:
         return Colors.red;
       default:
         return Colors.grey;
@@ -70,18 +72,18 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
   }
 
   // De même pour la méthode _getFillLevelText
-  String _getFillLevelText(NiveauDeRemplissage? level) {
+  String _getFillLevelText(Status? level) {
     // Gestion du cas où level est null
     if (level == null) {
       return "Inconnu"; // Texte par défaut si null
     }
     
     switch (level) {
-      case NiveauDeRemplissage.empty:
+      case Status.empty:
         return "Vide";
-      case NiveauDeRemplissage.medium:
+      case Status.medium:
         return "À moitié pleine";
-      case NiveauDeRemplissage.full:
+      case Status.full:
         return "Pleine";
       default:
         return "Inconnu";
@@ -95,7 +97,7 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
       final index = trashBins.indexWhere((bin) => bin.id == binId);
       if (index != -1) {
         // Remplacez cette poubelle par une nouvelle avec le niveau mis à jour
-        NiveauDeRemplissage newLevel = _calculateFillLevel(fillPercentage);
+        Status newLevel = _calculateFillLevel(fillPercentage);
         
         // Dans une implémentation réelle, vous mettriez à jour l'objet TrashBin lui-même
         // Pour l'instant, nous recréons l'objet entier
@@ -104,8 +106,9 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
           latLng: trashBins[index].latLng,
           type: trashBins[index].type,
           address: trashBins[index].address,
-          niveauDeRemplissage: newLevel,
+          status: newLevel,
           fillPercentage: fillPercentage,
+          capaciteTotale: trashBins[index].capaciteTotale,
         );
         
         // Mettre à jour la liste
@@ -119,13 +122,13 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
     });
   }
 
-  NiveauDeRemplissage _calculateFillLevel(double fillPercentage) {
+  Status _calculateFillLevel(double fillPercentage) {
     if (fillPercentage < 30) {
-      return NiveauDeRemplissage.empty;
+      return Status.empty;
     } else if (fillPercentage < 70) {
-      return NiveauDeRemplissage.medium;
+      return Status.medium;
     } else {
-      return NiveauDeRemplissage.full;
+      return Status.full;
     }
   }
 
@@ -201,8 +204,9 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
               latLng: bin.latLng,
               type: bin.type,
               address: formattedAddress, // Nouvelle adresse
-              niveauDeRemplissage: bin.niveauDeRemplissage,
+              status: bin.status,
               fillPercentage: bin.fillPercentage,
+              capaciteTotale: bin.capaciteTotale,
             );
             
             // Mettre à jour la poubelle dans la liste
@@ -597,16 +601,16 @@ Widget _buildTrashBinInfoWindow(TrashBin bin) {
                     height: 12,
                     decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                      color: _getFillLevelColor(bin.niveauDeRemplissage),
+                      color: _getFillLevelColor(bin.status),
                     ),
                   ),
                   const SizedBox(width: 6),
                   Text(
-                    _getFillLevelText(bin.niveauDeRemplissage),
+                    _getFillLevelText(bin.status),
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
-                      color: _getFillLevelColor(bin.niveauDeRemplissage),
+                      color: _getFillLevelColor(bin.status),
                     ),
                   ),
                 ],
@@ -630,7 +634,7 @@ Widget _buildTrashBinInfoWindow(TrashBin bin) {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
-                      color: _getFillLevelColor(bin.niveauDeRemplissage),
+                      color: _getFillLevelColor(bin.status),
                     ),
                   ),
                 ],
@@ -704,7 +708,7 @@ Widget _buildTrashBinInfoWindow(TrashBin bin) {
 }
 
 // Niveau de remplissage de la poubelle
-enum NiveauDeRemplissage { empty, medium, full }
+enum Status { empty, medium, full }
 
 // Classe représentant une poubelle
 class TrashBin {
@@ -712,15 +716,19 @@ class TrashBin {
   final latlong.LatLng latLng; 
   final String type;
   final String address;
-  final NiveauDeRemplissage niveauDeRemplissage; // Niveau de remplissage de la poubelle
+  final Status status; // Niveau de remplissage de la poubelle
   final double fillPercentage; // Taux de remplissage (0-100%)
+  final double capaciteTotale; 
+
 
   TrashBin({
     required this.id,
-    required this.latLng,
+    required this.latLng, //Les coordonnées GPS de la poubelle
     required this.type,
     required this.address,
-    required this.niveauDeRemplissage, 
+    required this.status, 
     this.fillPercentage = 0.0,
+    required this.capaciteTotale,
+   
   });
 }
