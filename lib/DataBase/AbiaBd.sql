@@ -152,6 +152,7 @@ CREATE TABLE IF NOT EXISTS `utilisateur` (
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `poubelle` (
   `id` VARCHAR(36) NOT NULL,
+  `nom` VARCHAR(100) NOT NULL,
   `capacite_totale` FLOAT NOT NULL,
   `niveau_remplissage` FLOAT NOT NULL DEFAULT 0,
   `statut_id` TINYINT NOT NULL,
@@ -420,6 +421,7 @@ CREATE PROCEDURE IF NOT EXISTS `sp_creer_poubelle` (
     IN p_latitude DECIMAL(10,8),
     IN p_longitude DECIMAL(11,8),
     IN p_adresse VARCHAR(255),
+    IN p_nom VARCHAR(100),
 )
 BEGIN
     DECLARE v_statut_id TINYINT;
@@ -432,10 +434,10 @@ BEGIN
     SET v_poubelle_id = generate_uuid();
 
     INSERT INTO poubelle (
-        id, capacite_totale, niveau_remplissage,
+        id, capacite_totale, nom, niveau_remplissage,
         statut_id, latitude, longitude, adresse
     ) VALUES (
-        v_poubelle_id, p_capacite_totale, 0,
+        v_poubelle_id, p_capacite_totale, p_nom, 0,
         v_statut_id, p_latitude, p_longitude, p_adresse
     );
 

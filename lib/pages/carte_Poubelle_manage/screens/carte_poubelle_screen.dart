@@ -35,7 +35,7 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
   // Liste des poubelles 
   final List<TrashBin> trashBins = [
     TrashBin(
-      id: 'DS24E',
+      nomPoubelle: 'DS24E',
       latLng: latlong.LatLng(48.8566, 2.3522),
       address: 'Rue Victor Brault',
       status: Status.full,
@@ -45,7 +45,7 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
       
     ),
     TrashBin(
-      id: '32VCS',
+      nomPoubelle: '32VCS',
       latLng: latlong.LatLng(48.8570, 2.3510), 
       address: 'Rue Wilson',
       status: Status.medium,
@@ -97,7 +97,7 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
     //Mettre à jour future du niveau de remplissage
   void updateTrashBinFillLevel(String binId, double fillPercentage) {
     setState(() {
-      final index = trashBins.indexWhere((bin) => bin.id == binId);
+      final index = trashBins.indexWhere((bin) => bin.nomPoubelle == binId);
       if (index != -1) {
         // Remplacez cette poubelle par une nouvelle avec le niveau mis à jour
         Status newLevel = _calculateFillLevel(fillPercentage);
@@ -105,7 +105,7 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
         // Dans une implémentation réelle, vous mettriez à jour l'objet TrashBin lui-même
         // Pour l'instant, nous recréons l'objet entier
         TrashBin updatedBin = TrashBin(
-          id: trashBins[index].id,
+          nomPoubelle: trashBins[index].nomPoubelle,
           latLng: trashBins[index].latLng,
           address: trashBins[index].address,
           status: newLevel,
@@ -119,7 +119,7 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
         trashBins[index] = updatedBin;
         
         // Si la poubelle est actuellement sélectionnée, mettre à jour également selectedBin
-        if (selectedBin?.id == binId) {
+        if (selectedBin?.nomPoubelle == binId) {
           selectedBin = updatedBin;
         }
       }
@@ -200,11 +200,11 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
         
         // Mettre à jour la liste de poubelles avec la nouvelle adresse
         setState(() {
-          final index = trashBins.indexWhere((element) => element.id == bin.id);
+          final index = trashBins.indexWhere((element) => element.nomPoubelle == bin.nomPoubelle);
           if (index != -1) {
             // Créer une nouvelle instance avec l'adresse mise à jour
             TrashBin updatedBin = TrashBin(
-              id: bin.id,
+              nomPoubelle: bin.nomPoubelle,
               latLng: bin.latLng,
               address: formattedAddress, // Nouvelle adresse
               status: bin.status,
@@ -218,7 +218,7 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
             trashBins[index] = updatedBin;
             
             // Si c'est la poubelle sélectionnée, mettre à jour selectedBin
-            if (selectedBin?.id == bin.id) {
+            if (selectedBin?.nomPoubelle == bin.nomPoubelle) {
               selectedBin = updatedBin;
             }
           }
@@ -227,7 +227,7 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
           // isLoadingAddress = false;
         });
         
-        print("Adresse mise à jour pour la poubelle ${bin.id}: $formattedAddress");
+        print("Adresse mise à jour pour la poubelle ${bin.nomPoubelle}: $formattedAddress");
       } else {
         print("Aucune information d'adresse trouvée pour les coordonnées: ${bin.latLng}");
       }
@@ -494,9 +494,8 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
       required Status statut,
       required String adresse,
     }) {
-      // Dans une application réelle, appeler l'API backend
       // Pour l'instant, générer un ID aléatoire
-      final String newId = 'BIN${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}';
+      final String nomPoubelle = 'BIN${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}';
       
       // Calculer le taux de remplissage initial basé sur le statut
       double fillPercentage = 0.0;
@@ -508,7 +507,7 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
       
       // Créer la nouvelle poubelle
       final newBin = TrashBin(
-        id: newId,
+        nomPoubelle: nomPoubelle,
         latLng: position,
         address: adresse,
         status: statut,
@@ -865,7 +864,7 @@ Widget _buildTrashBinInfoWindow(TrashBin bin) {
               const SizedBox(width: 8),
               // Titre de l'infobulle
               Text(
-                "Poubelle: ${bin.id} ",
+                "Poubelle: ${bin.nomPoubelle} ",
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
@@ -1038,7 +1037,7 @@ enum Status { empty, medium, full }
 
 // Classe représentant une poubelle
 class TrashBin {
-  final String id;
+  final String nomPoubelle;
   final latlong.LatLng latLng; 
   final String address;
   final Status status; // Niveau de remplissage de la poubelle
@@ -1049,7 +1048,7 @@ class TrashBin {
 
 
   TrashBin({
-    required this.id,
+    required this.nomPoubelle,
     required this.latLng, //Les coordonnées GPS de la poubelle
     required this.address,
     required this.status, 
