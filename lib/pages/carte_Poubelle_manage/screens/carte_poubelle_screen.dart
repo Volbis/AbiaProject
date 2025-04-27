@@ -743,7 +743,7 @@ Future<void> _addNewTrashBin({
                   'Carte des poubelles',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: 15,
                     fontWeight: FontWeight.bold,
                     color: Color.fromARGB(255, 83, 83, 83),
                   ),

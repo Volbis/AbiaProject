@@ -114,7 +114,7 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const SizedBox(height: 60),
+              const SizedBox(height: 20),
               
               // Avatar circulaire
               Container(
@@ -125,7 +125,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   color: const Color.fromARGB(119, 227, 227, 227),
                 ),
                 child: const Icon(
-                  Icons.person_outline_rounded,
+                  Icons.security,
                   size: 40,
                   color: AppColors.primaryColor,
                 ),
@@ -155,16 +155,17 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 8),
                   TextField(
+
                     controller: _emailController,
                     decoration: InputDecoration(
                       filled: true,
                       fillColor: Colors.grey[100],
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(20),
                         borderSide: BorderSide.none,
                       ),
                       contentPadding: const EdgeInsets.symmetric(
-                        vertical: 15,
+                        vertical: 12,
                         horizontal: 15,
                       ),
                       hintText: 'exemple@email.com',  // Placeholder pour le champ email
@@ -197,14 +198,14 @@ class _LoginScreenState extends State<LoginScreen> {
                       filled: true,
                       fillColor: Colors.grey[100],
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(20),
                         borderSide: BorderSide.none,
                       ),
                       contentPadding: const EdgeInsets.symmetric(
-                        vertical: 15,
+                        vertical: 12,
                         horizontal: 15,
                       ),
-                      hintText: '..............',  
+                      hintText: 'Mot de passe',  
                       hintStyle: TextStyle(
                         color: Colors.grey[400], 
                         fontSize: 17,
@@ -214,18 +215,19 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 55),
 
               // Bouton Se connecter
               SizedBox(
-                width: 200,
+                width: 230,
+                height: 60,
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _handleLogin,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryColor,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(20),
                     ),
                   ),
                   child: _isLoading
@@ -242,7 +244,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 17,
-                           fontWeight: FontWeight.w600,
+                   
                           ),
                         ),
                 ),

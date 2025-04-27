@@ -33,7 +33,7 @@ class VerificationSuccessScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             // Icone de validation
-            Container(
+             Container(
               width: 120,
               height: 120,
               decoration: BoxDecoration(
@@ -69,22 +69,22 @@ class VerificationSuccessScreen extends StatelessWidget {
                 color: Colors.black,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 14),
             
             // Message secondaire
             const Text(
-              'Vous êtes connecté en tant qu\'admin',
+              'Vous êtes connecté en tant qu\'administrateur',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.black54,
               ),
             ),
-            const SizedBox(height: 40),
+            const SizedBox(height: 70),
             
             // Bouton Continuer
             SizedBox(
-              width: double.infinity,
+              width: 240,
               child: ElevatedButton(
                 onPressed: onContinue,
                 style: ElevatedButton.styleFrom(
@@ -92,21 +92,21 @@ class VerificationSuccessScreen extends StatelessWidget {
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(20),
                   ),
                 ),
                 child: const Text(
                   'Continue',
                   style: TextStyle(
                     fontSize: 17,
-                    fontWeight: FontWeight.w600,
+            
                   ),
                 ),
               ),
             ),
           ],
         ),
-      ),
+       ),
     );
   }
 }

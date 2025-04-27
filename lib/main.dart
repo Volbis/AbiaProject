@@ -67,14 +67,14 @@ class MyApp extends StatelessWidget {
         ),
         inputDecorationTheme: InputDecorationTheme(
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(15),
+            borderRadius: BorderRadius.circular(20),
           ),
           enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(15),
+            borderRadius: BorderRadius.circular(20),
             borderSide: const BorderSide(color: Color(0xFFDFE2E5)),
           ),
           focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(15),
+            borderRadius: BorderRadius.circular(20),
             borderSide: const BorderSide(color: Color(0xFFFE554A)),
           ),
         ),
