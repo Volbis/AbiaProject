@@ -388,8 +388,8 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
                       Navigator.pop(context);
                     },
                     style: TextButton.styleFrom(
-                      foregroundColor: AppColors.secondaryColor,
-                      backgroundColor: const Color.fromARGB(63, 208, 208, 208).withOpacity(0.6),
+                      foregroundColor: AppColors.primaryColor,
+                      backgroundColor: const Color.fromARGB(62, 230, 230, 230).withOpacity(0.6),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(15),
                       ),
@@ -845,16 +845,139 @@ Future<void> _addNewTrashBin({
                 }
               },
               onPlusButtonPressed: () {
-                setState(() {
+                 setState(() {
                   _isAddingTrashBin = true;
-                  // Afficher un message guide
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Touchez la carte pour placer une nouvelle poubelle'),
-                      duration: Duration(seconds: 3),
-                    )
+                  
+                   showDialog(
+                    context: context,
+                    barrierColor: Colors.transparent,
+                    builder: (BuildContext context) {
+                      // Disparaît automatiquement après 8 secondes
+                      Future.delayed(Duration(seconds: 8), () {
+                        Navigator.of(context).pop();
+                      });
+                      
+                      return Dialog(
+                        backgroundColor: Colors.transparent,
+                        elevation: 0,
+                        child: TweenAnimationBuilder<double>(
+                          tween: Tween<double>(begin: 0.0, end: 1.0),
+                          duration: Duration(milliseconds: 500),
+                          builder: (context, value, child) {
+                            return Opacity(
+                              opacity: value,
+                              child: Transform.translate(
+                                offset: Offset(0, 50 * (1 - value)),
+                                child: Container(
+                                  width: 300,
+                                  padding: EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                      colors: [
+                                        AppColors.primaryColor.withOpacity(0.9),
+                                        AppColors.secondaryColor.withOpacity(0.9),
+                                      ],
+                                    ),
+                                    borderRadius: BorderRadius.circular(20),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.2),
+                                        blurRadius: 15,
+                                        spreadRadius: 2,
+                                      ),
+                                    ],
+                                  ),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      // Icône animée
+                                      Container(
+                                        padding: EdgeInsets.all(12),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white.withOpacity(0.3),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: TweenAnimationBuilder<double>(
+                                          tween: Tween<double>(begin: 0.0, end: 1.0),
+                                          duration: Duration(milliseconds: 800),
+                                          builder: (context, value, child) {
+                                            return Transform.rotate(
+                                              angle: value * 6.28,
+                                              child: Icon(
+                                                Icons.add_location_alt_rounded,
+                                                color: Colors.white,
+                                                size: 36,
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                      SizedBox(height: 16),
+                                      
+                                      // Titre
+                                      Text(
+                                        'Mode ajout activé',
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                      SizedBox(height: 10),
+                                      
+                                      // Message
+                                      Text(
+                                        'Touchez la carte pour placer une nouvelle poubelle',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.white.withOpacity(0.9),
+                                        ),
+                                      ),
+                                      SizedBox(height: 16),
+                                      
+                                      // Indicateur animé
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          for (int i = 0; i < 3; i++)
+                                            TweenAnimationBuilder<double>(
+                                              tween: Tween<double>(begin: 0, end: 1),
+                                              duration: Duration(milliseconds: 600),
+                                              curve: Interval(
+                                                i * 0.2, 
+                                                0.6 + i * 0.2, 
+                                                curve: Curves.easeInOut
+                                              ),
+                                              builder: (context, value, child) {
+                                                return Container(
+                                                  width: 8,
+                                                  height: 8,
+                                                  margin: EdgeInsets.symmetric(horizontal: 4),
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.white.withOpacity(value * 0.8),
+                                                    shape: BoxShape.circle,
+                                                  ),
+                                                );
+                                              },
+                                            ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      
+                      );
+                    },
                   );
                 });
+                              
               },
               useSvgIcons: false, // Set this to true to use SVG icons
               icons: const [
