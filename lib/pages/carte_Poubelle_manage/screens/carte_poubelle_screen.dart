@@ -291,132 +291,141 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
   
   // Afficher le formulaire d'ajout de poubelle
   void _showAddTrashBinForm(BuildContext context, latlong.LatLng position) {
-  // Contrôleurs pour les champs de formulaire
-  final capaciteController = TextEditingController(text: '100.0');
-  final adresseController = TextEditingController();
-  
-  // Valeurs par défaut
-  Status statutInitial = Status.empty;
-  
-  // Récupérer l'adresse à partir des coordonnées
-  _getAddressFromCoordinates(position).then((address) {
-    if (address.isNotEmpty) {
-      adresseController.text = address;
-    }
-  });
+    // Contrôleurs pour les champs de formulaire
+    final capaciteController = TextEditingController(text: '100.0');
+    final adresseController = TextEditingController();
+    
+    // Valeurs par défaut
+    Status statutInitial = Status.empty;
+    
+    // Récupérer l'adresse à partir des coordonnées
+    _getAddressFromCoordinates(position).then((address) {
+      if (address.isNotEmpty) {
+        adresseController.text = address;
+      }
+    });
 
-  showModalBottomSheet(
-    context: context,
-    isScrollControlled: true,
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-    ),
-    builder: (context) => Padding(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-        left: 16, right: 16, top: 16
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              'Ajouter une nouvelle poubelle',
-              style: TextStyle(
-                fontSize: 18, 
-                fontWeight: FontWeight.bold,
-                color: AppColors.secondaryColor,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 16),
-            
-            // Capacité totale
-            TextField(
-              controller: capaciteController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: 'Capacité totale (litres)',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            SizedBox(height: 16),
-            
-            // Statut initial
-            DropdownButtonFormField<Status>(
-              value: statutInitial,
-              decoration: InputDecoration(
-                labelText: 'Statut initial',
-                border: OutlineInputBorder(),
-              ),
-              items: [
-                DropdownMenuItem(value: Status.empty, child: Text('Vide')),
-                DropdownMenuItem(value: Status.medium, child: Text('À moitié pleine')),
-                DropdownMenuItem(value: Status.full, child: Text('Pleine')),
-              ],
-              onChanged: (value) {
-                statutInitial = value!;
-              },
-            ),
-            SizedBox(height: 16),
-            
-            // Adresse
-            TextField(
-              controller: adresseController,
-              maxLines: 2,
-              decoration: InputDecoration(
-                labelText: 'Adresse',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            SizedBox(height: 24),
-            
-            // Boutons d'action
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                // Bouton Annuler
-                TextButton(
-                  onPressed: () {
-                    // Annuler l'ajout
-                    setState(() {
-                      _isAddingTrashBin = false;
-                      _newBinPosition = null;
-                    });
-                    Navigator.pop(context);
-                  },
-                  style: TextButton.styleFrom(
-                    foregroundColor: AppColors.secondaryColor,
-                  ),
-                  child: Text('Annuler'),
+      builder: (context) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+          left: 16, right: 16, top: 16
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'Ajouter une nouvelle poubelle',
+                style: TextStyle(
+                  fontSize: 18, 
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.secondaryColor,
                 ),
-                // Bouton Ajouter
-                ElevatedButton(
-                  onPressed: () {
-                    // Valider et ajouter la poubelle
-                    _addNewTrashBin(
-                      position: position,
-                      capacite: double.tryParse(capaciteController.text) ?? 100.0,
-                      statut: statutInitial,
-                      adresse: adresseController.text,
-                    );
-                    Navigator.pop(context);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryColor,
-                    foregroundColor: Colors.white,
-                  ),
-                  child: Text('Ajouter'),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 25),
+              
+              // Capacité totale
+              TextField(
+                controller: capaciteController,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: 'Capacité totale (litres)',
+                  border: OutlineInputBorder(),
                 ),
-              ],
-            ),
-            SizedBox(height: 16),
-          ],
+              ),
+              SizedBox(height: 16),
+              
+              // Statut initial
+              DropdownButtonFormField<Status>(
+                value: statutInitial,
+                decoration: InputDecoration(
+                  labelText: 'Statut initial',
+                  border: OutlineInputBorder(),
+                ),
+                items: [
+                  DropdownMenuItem(value: Status.empty, child: Text('Vide')),
+                  DropdownMenuItem(value: Status.medium, child: Text('À moitié pleine')),
+                  DropdownMenuItem(value: Status.full, child: Text('Pleine')),
+                ],
+                onChanged: (value) {
+                  statutInitial = value!;
+                },
+              ),
+              SizedBox(height: 16),
+              
+              // Adresse
+              TextField(
+                controller: adresseController,
+                maxLines: 2,
+                decoration: InputDecoration(
+                  labelText: 'Adresse',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              SizedBox(height: 24),
+              
+              // Boutons d'action
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  // Bouton Annuler
+                  ElevatedButton(
+                    onPressed: () {
+                      // Annuler l'ajout
+                      setState(() {
+                        _isAddingTrashBin = false;
+                        _newBinPosition = null;
+                      });
+                      Navigator.pop(context);
+                    },
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppColors.secondaryColor,
+                      backgroundColor: const Color.fromARGB(63, 208, 208, 208).withOpacity(0.6),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                    ),
+                    child: Text('Annuler'),
+                  ),
+                  // Bouton Ajouter
+                  ElevatedButton(
+                    onPressed: () {
+                      // Valider et ajouter la poubelle
+                      _addNewTrashBin(
+                        position: position,
+                        capacite: double.tryParse(capaciteController.text) ?? 100.0,
+                        statut: statutInitial,
+                        adresse: adresseController.text,
+                      );
+                      Navigator.pop(context);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryColor,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                    ),
+                    child: Text('Ajouter'),
+                    
+                  ),
+                ],
+              ),
+              SizedBox(height: 16),
+            ],
+          ),
         ),
       ),
-    ),
-  );
+    );
+
 }
 
   // Méthode pour récupérer l'adresse à partir des coordonnées
@@ -429,12 +438,47 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
       
       if (placemarks.isNotEmpty) {
         final place = placemarks.first;
-        // Utiliser la même logique de formatage que dans _updateBinAddress
-        // ...formatage de l'adresse...
+        // Récupérer les composants d'adresse
+        final String street = place.street ?? '';
+        final String thoroughfare = place.thoroughfare ?? '';
+        final String subThoroughfare = place.subThoroughfare ?? '';
+        final String locality = place.locality ?? '';
+        final String subLocality = place.subLocality ?? '';
+        final String postalCode = place.postalCode ?? '';
         
-        String formattedAddress = ''; 
-        // Récupérer votre code de formatage existant depuis _updateBinAddress
+        // Formater l'adresse de façon lisible (même logique que dans _updateBinAddress)
+        String formattedAddress = '';
         
+        if (street.isNotEmpty) {
+          formattedAddress = street;
+        } else if (thoroughfare.isNotEmpty) {
+          formattedAddress = thoroughfare;
+          if (subThoroughfare.isNotEmpty) {
+            formattedAddress = '$subThoroughfare $formattedAddress';
+          }
+        }
+              if (locality.isNotEmpty) {
+          if (formattedAddress.isNotEmpty) {
+            formattedAddress += ', $locality';
+          } else {
+            formattedAddress = locality;
+          }
+        } else if (subLocality.isNotEmpty) {
+          if (formattedAddress.isNotEmpty) {
+            formattedAddress += ', $subLocality';
+          } else {
+            formattedAddress = subLocality;
+          }
+        }
+        
+        if (postalCode.isNotEmpty) {
+          formattedAddress += ' $postalCode';
+        }
+        
+        // Si l'adresse est vide, utiliser une valeur par défaut
+        if (formattedAddress.isEmpty) {
+          formattedAddress = 'Adresse non disponible';
+        }
         return formattedAddress;
       }
     } catch (e) {
@@ -445,49 +489,49 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
 
   // Méthode pour ajouter effectivement la poubelle
   void _addNewTrashBin({
-    required latlong.LatLng position,
-    required double capacite,
-    required Status statut,
-  required String adresse,
-  }) {
-    // Dans une application réelle, appeler l'API backend
-    // Pour l'instant, générer un ID aléatoire
-    final String newId = 'BIN${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}';
-    
-    // Calculer le taux de remplissage initial basé sur le statut
-    double fillPercentage = 0.0;
-    switch (statut) {
-      case Status.empty: fillPercentage = 10.0; break;
-      case Status.medium: fillPercentage = 50.0; break;
-      case Status.full: fillPercentage = 90.0; break;
-    }
-    
-    // Créer la nouvelle poubelle
-    final newBin = TrashBin(
-      id: newId,
-      latLng: position,
-      address: adresse,
-      status: statut,
-      fillPercentage: fillPercentage,
-      capaciteTotale: capacite,
-      seuilAlerte: 0.9,
-      verrouille: true,
-    );
-    
-    // Ajouter à la liste et rafraîchir l'UI
-    setState(() {
-      trashBins.add(newBin);
-      _isAddingTrashBin = false;
-      _newBinPosition = null;
-    });
-    
-    // Afficher une confirmation
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Poubelle ajoutée avec succès'),
-        backgroundColor: Colors.green,
-      )
-    );
+      required latlong.LatLng position,
+      required double capacite,
+      required Status statut,
+      required String adresse,
+    }) {
+      // Dans une application réelle, appeler l'API backend
+      // Pour l'instant, générer un ID aléatoire
+      final String newId = 'BIN${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}';
+      
+      // Calculer le taux de remplissage initial basé sur le statut
+      double fillPercentage = 0.0;
+      switch (statut) {
+        case Status.empty: fillPercentage = 10.0; break;
+        case Status.medium: fillPercentage = 50.0; break;
+        case Status.full: fillPercentage = 90.0; break;
+      }
+      
+      // Créer la nouvelle poubelle
+      final newBin = TrashBin(
+        id: newId,
+        latLng: position,
+        address: adresse,
+        status: statut,
+        fillPercentage: fillPercentage,
+        capaciteTotale: capacite,
+        seuilAlerte: 0.9,
+        verrouille: true,
+      );
+      
+      // Ajouter à la liste et rafraîchir l'UI
+      setState(() {
+        trashBins.add(newBin);
+        _isAddingTrashBin = false;
+        _newBinPosition = null;
+      });
+      
+      // Afficher une confirmation
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Poubelle ajoutée avec succès'),
+          backgroundColor: Colors.green,
+        )
+      );
   }
 
   // Initialisation de l'état
