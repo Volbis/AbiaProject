@@ -1,8 +1,9 @@
 import 'package:abiaproject/common/theme/app_theme.dart';
 import 'package:abiaproject/pages/carte_Poubelle_manage/controllers/carte_poubelle_controller.dart';
 import 'package:abiaproject/partagés/widgets_partagés/nav_bar_avec_plus.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:abiaproject/database/login_data_base.dart';
 
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart' as latlong;
@@ -487,16 +488,56 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
     return '';
   }
 
-  // Méthode pour ajouter effectivement la poubelle
-  void _addNewTrashBin({
-      required latlong.LatLng position,
-      required double capacite,
-      required Status statut,
-      required String adresse,
-    }) {
-      // Pour l'instant, générer un ID aléatoire
-      final String nomPoubelle = 'BIN${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}';
-      
+  // Méthode pour ajouter effectivement la poubelle en utilisant la procédure stockée
+Future<void> _addNewTrashBin({
+  required latlong.LatLng position,
+  required double capacite,
+  required Status statut,
+  required String adresse,
+}) async {
+  //Nom de la poubelle*
+  final String nomPoubelle = 'BIN${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}';
+
+  // Convertir le statut de l'application en format accepté par la BD
+  String statutBD;
+  switch (statut) {
+    case Status.empty:
+      statutBD = 'VIDE';
+      break;
+    case Status.medium:
+      statutBD = 'A_MOITIE_PLEINE';
+      break;
+    case Status.full:
+      statutBD = 'PLEINE';
+      break;
+  }
+  
+  // Afficher un indicateur de chargement
+  setState(() {
+    // On pourrait ajouter un indicateur de chargement ici
+  });
+  
+  try {
+    // Appeler la procédure stockée via la classe DatabaseConnection
+    final results = await DatabaseConnection.callProcedure(
+      'sp_creer_poubelle',
+      [
+        capacite,            
+        statutBD,            
+        position.latitude,   
+        position.longitude,  
+        adresse,           
+        nomPoubelle,
+      ]
+    );
+    
+    // Récupérer l'ID de la poubelle générée
+    String? poubelleId;
+    if (results.isNotEmpty) {
+      poubelleId = results.first['poubelle_id'].toString();
+    }
+    
+    if (poubelleId != null) {
       // Calculer le taux de remplissage initial basé sur le statut
       double fillPercentage = 0.0;
       switch (statut) {
@@ -505,7 +546,7 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
         case Status.full: fillPercentage = 90.0; break;
       }
       
-      // Créer la nouvelle poubelle
+      // Créer la nouvelle poubelle dans l'interface
       final newBin = TrashBin(
         nomPoubelle: nomPoubelle,
         latLng: position,
@@ -531,7 +572,30 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
           backgroundColor: Colors.green,
         )
       );
+    } else {
+      // Gérer l'erreur : aucun ID retourné
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erreur lors de l\'ajout de la poubelle'),
+          backgroundColor: Colors.red,
+        )
+      );
+    }
+  } catch (e) {
+    // Gérer les erreurs de base de données
+    print('Erreur lors de l\'ajout de la poubelle : $e');
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Erreur de connexion à la base de données'),
+        backgroundColor: Colors.red,
+      )
+    );
+  } finally {
+    setState(() {
+      // Désactiver l'indicateur de chargement si nécessaire
+    });
   }
+}
 
   // Initialisation de l'état
   @override
