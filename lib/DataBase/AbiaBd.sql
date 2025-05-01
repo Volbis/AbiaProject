@@ -1,5 +1,5 @@
 -- -----------------------------------------------------
--- Script MySQL complet pour l'application de gestion de poubelles
+-- Script MySQL complet pour l'application de gestion de poubelles intelligentes
 -- -----------------------------------------------------
 
 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
@@ -9,10 +9,10 @@ SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL,ALLOW_INVALID_DATES';
 -- -----------------------------------------------------
 -- Schéma de base de données
 -- -----------------------------------------------------
-CREATE SCHEMA IF NOT EXISTS `gestion_poubelles` 
+CREATE SCHEMA IF NOT EXISTS `db_abia` 
   DEFAULT CHARACTER SET utf8mb4 
   COLLATE utf8mb4_unicode_ci;
-USE `gestion_poubelles`;
+USE `db_abia`;
 
 -- -----------------------------------------------------
 -- Tables pour les énumérations
@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS `type_utilisateur` (
   UNIQUE INDEX `nom_UNIQUE` (`nom` ASC)
 ) ENGINE = InnoDB;
 
-INSERT INTO `type_utilisateur` (`nom`) VALUES 
+INSERT IGNORE INTO `type_utilisateur` (`nom`) VALUES 
   ('ADMIN'), 
   ('AGENT_COLLECTE'), 
   ('UTILISATEUR_STANDARD');
@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS `statut_poubelle` (
   UNIQUE INDEX `nom_UNIQUE` (`nom` ASC)
 ) ENGINE = InnoDB;
 
-INSERT INTO `statut_poubelle` (`nom`) VALUES 
+INSERT IGNORE INTO `statut_poubelle` (`nom`) VALUES 
   ('VIDE'), 
   ('A_MOITIE_PLEINE'), 
   ('PLEINE');
@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS `statut_collecte` (
   UNIQUE INDEX `nom_UNIQUE` (`nom` ASC)
 ) ENGINE = InnoDB;
 
-INSERT INTO `statut_collecte` (`nom`) VALUES 
+INSERT IGNORE INTO `statut_collecte` (`nom`) VALUES 
   ('PLANIFIEE'), 
   ('EN_COURS'), 
   ('TERMINEE'), 
@@ -66,7 +66,7 @@ CREATE TABLE IF NOT EXISTS `type_notification` (
   UNIQUE INDEX `nom_UNIQUE` (`nom` ASC)
 ) ENGINE = InnoDB;
 
-INSERT INTO `type_notification` (`nom`) VALUES 
+INSERT IGNORE INTO `type_notification` (`nom`) VALUES 
   ('ALERTE_REMPLISSAGE'), 
   ('DYSFONCTIONNEMENT'), 
   ('RAPPEL_COLLECTE'), 
@@ -80,7 +80,7 @@ CREATE TABLE IF NOT EXISTS `type_evenement_historique` (
   UNIQUE INDEX `nom_UNIQUE` (`nom` ASC)
 ) ENGINE = InnoDB;
 
-INSERT INTO `type_evenement_historique` (`nom`) VALUES 
+INSERT IGNORE INTO `type_evenement_historique` (`nom`) VALUES 
   ('OUVERTURE'), 
   ('FERMETURE'), 
   ('REMPLISSAGE'), 
@@ -95,7 +95,7 @@ CREATE TABLE IF NOT EXISTS `type_statistique` (
   UNIQUE INDEX `nom_UNIQUE` (`nom` ASC)
 ) ENGINE = InnoDB;
 
-INSERT INTO `type_statistique` (`nom`) VALUES 
+INSERT IGNORE INTO `type_statistique` (`nom`) VALUES 
   ('REMPLISSAGE_MOYEN'), 
   ('FREQUENCE_COLLECTE'), 
   ('NOMBRE_POUBELLE_PLEINE');
@@ -108,7 +108,7 @@ CREATE TABLE IF NOT EXISTS `periode_statistique` (
   UNIQUE INDEX `nom_UNIQUE` (`nom` ASC)
 ) ENGINE = InnoDB;
 
-INSERT INTO `periode_statistique` (`nom`) VALUES 
+INSERT IGNORE INTO `periode_statistique` (`nom`) VALUES 
   ('JOUR'), 
   ('SEMAINE'), 
   ('MOIS'), 
@@ -122,7 +122,7 @@ CREATE TABLE IF NOT EXISTS `type_badge` (
   UNIQUE INDEX `nom_UNIQUE` (`nom` ASC)
 ) ENGINE = InnoDB;
 
-INSERT INTO `type_badge` (`nom`) VALUES 
+INSERT IGNORE INTO `type_badge` (`nom`) VALUES 
   ('ADMIN'), 
   ('AGENT_COLLECTE');
 
@@ -421,7 +421,7 @@ CREATE PROCEDURE IF NOT EXISTS `sp_creer_poubelle` (
     IN p_latitude DECIMAL(10,8),
     IN p_longitude DECIMAL(11,8),
     IN p_adresse VARCHAR(255),
-    IN p_nom VARCHAR(100),
+    IN p_nom VARCHAR(100)
 )
 BEGIN
     DECLARE v_statut_id TINYINT;
@@ -444,6 +444,31 @@ BEGIN
     SELECT v_poubelle_id AS poubelle_id;
 END //
 
+-- Procédure pour verrouiller automatiquement une poubelle
+CREATE PROCEDURE IF NOT EXISTS `sp_verrouiller_poubelle` (
+    IN p_poubelle_id VARCHAR(36)
+)
+BEGIN
+    DECLARE v_type_evenement_id TINYINT;
+
+    SELECT id INTO v_type_evenement_id
+      FROM type_evenement_historique
+     WHERE nom = 'FERMETURE';
+
+    UPDATE poubelle
+       SET verrouille = TRUE
+     WHERE id = p_poubelle_id;
+
+    INSERT INTO historique (
+        id, poubelle_id, date, type_evenement_id, valeur, utilisateur_id
+    ) VALUES (
+        generate_uuid(), p_poubelle_id, NOW(),
+        v_type_evenement_id, NULL, NULL
+    );
+
+    SELECT TRUE AS succes, 'Poubelle verrouillée automatiquement' AS message;
+END //
+
 -- Procédure pour mettre à jour le niveau de remplissage d'une poubelle
 CREATE PROCEDURE IF NOT EXISTS `sp_mettre_a_jour_niveau_remplissage` (
     IN p_poubelle_id VARCHAR(36),
@@ -451,19 +476,23 @@ CREATE PROCEDURE IF NOT EXISTS `sp_mettre_a_jour_niveau_remplissage` (
     IN p_utilisateur_id VARCHAR(36)
 )
 BEGIN
+    -- Toutes les déclarations de variables d'abord
     DECLARE v_type_evenement_id TINYINT;
     DECLARE v_seuil_alerte FLOAT;
     DECLARE v_type_notification_id TINYINT;
+    DECLARE done INT DEFAULT FALSE;
+    DECLARE v_admin_id VARCHAR(36);
+    
+    -- Ensuite les déclarations de curseurs
     DECLARE v_admins_cursor CURSOR FOR
         SELECT id
           FROM utilisateur
-         WHERE type_utilisateur_id = (
-             SELECT id FROM type_utilisateur WHERE nom = 'ADMIN'
-         );
-    DECLARE v_admin_id VARCHAR(36);
-    DECLARE done INT DEFAULT FALSE;
+         WHERE type_utilisateur_id = (SELECT id FROM type_utilisateur WHERE nom = 'ADMIN');
+    
+    -- Enfin les gestionnaires d'erreurs
     DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
 
+    -- Mise à jour du niveau de remplissage
     SELECT id INTO v_type_evenement_id
       FROM type_evenement_historique
      WHERE nom = 'REMPLISSAGE';
@@ -479,16 +508,21 @@ BEGIN
         v_type_evenement_id, p_niveau_remplissage, p_utilisateur_id
     );
 
+    -- Vérification du seuil d'alerte
     SELECT seuil_alerte INTO v_seuil_alerte
       FROM poubelle
      WHERE id = p_poubelle_id;
 
+    -- Si le seuil est atteint, verrouiller automatiquement et envoyer des notifications
     IF p_niveau_remplissage >= v_seuil_alerte THEN
         SELECT id INTO v_type_notification_id
           FROM type_notification
          WHERE nom = 'ALERTE_REMPLISSAGE';
 
-        CALL sp_verrouiller_poubelle(p_poubelle_id, NULL);
+        -- Verrouillage automatique de la poubelle quand le seuil est atteint
+        CALL sp_verrouiller_poubelle(p_poubelle_id);
+        
+        -- Envoi de notifications aux administrateurs
         OPEN v_admins_cursor;
         read_loop: LOOP
             FETCH v_admins_cursor INTO v_admin_id;
@@ -515,6 +549,49 @@ BEGIN
             );
         END LOOP;
         CLOSE v_admins_cursor;
+    END IF;
+END //
+
+-- Procédure pour déverrouiller une poubelle
+CREATE PROCEDURE IF NOT EXISTS `sp_deverrouiller_poubelle` (
+    IN p_poubelle_id VARCHAR(36),
+    IN p_code_badge VARCHAR(50)
+)
+BEGIN
+    DECLARE v_badge_valide BOOLEAN;
+    DECLARE v_utilisateur_id VARCHAR(36);
+    DECLARE v_type_evenement_id TINYINT;
+
+    SELECT EXISTS(
+        SELECT 1 FROM badge_deverrouillage
+         WHERE code = p_code_badge
+           AND actif = TRUE
+           AND date_expiration > NOW()
+    ) INTO v_badge_valide;
+
+    IF v_badge_valide THEN
+        SELECT utilisateur_id INTO v_utilisateur_id
+          FROM badge_deverrouillage
+         WHERE code = p_code_badge;
+
+        SELECT id INTO v_type_evenement_id
+          FROM type_evenement_historique
+         WHERE nom = 'OUVERTURE';
+
+        UPDATE poubelle
+           SET verrouille = FALSE
+         WHERE id = p_poubelle_id;
+
+        INSERT INTO historique (
+            id, poubelle_id, date, type_evenement_id, valeur, utilisateur_id
+        ) VALUES (
+            generate_uuid(), p_poubelle_id, NOW(),
+            v_type_evenement_id, NULL, v_utilisateur_id
+        );
+
+        SELECT TRUE AS succes, 'Poubelle déverrouillée avec succès' AS message;
+    ELSE
+        SELECT FALSE AS succes, 'Code de badge invalide ou expiré' AS message;
     END IF;
 END //
 
@@ -628,19 +705,25 @@ CREATE PROCEDURE IF NOT EXISTS `sp_marquer_collecte_terminee` (
     IN p_collecte_id VARCHAR(36)
 )
 BEGIN
+    -- Toutes les déclarations de variables d'abord
     DECLARE v_statut_id TINYINT;
     DECLARE v_route_id VARCHAR(36);
     DECLARE v_type_evenement_id TINYINT;
+    DECLARE v_poubelle_id VARCHAR(36);
+    DECLARE done INT DEFAULT FALSE;
+    
+    -- Ensuite les déclarations de curseurs
     DECLARE v_poubelles_cursor CURSOR FOR
         SELECT pr.poubelle_id
           FROM poubelle_dans_route pr
           JOIN collecte_planifiee cp
             ON pr.route_id = cp.route_id
          WHERE cp.id = p_collecte_id;
-    DECLARE v_poubelle_id VARCHAR(36);
-    DECLARE done INT DEFAULT FALSE;
+    
+    -- Enfin les gestionnaires d'erreurs
     DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
 
+    -- Le reste du code
     SELECT id INTO v_statut_id
       FROM statut_collecte
      WHERE nom = 'TERMINEE';
@@ -662,7 +745,7 @@ BEGIN
 
         UPDATE poubelle
            SET date_derniere_collecte = NOW(),
-               niveau_remplissage   = 0
+               niveau_remplissage = 0
          WHERE id = v_poubelle_id;
 
         INSERT INTO historique (
@@ -676,74 +759,85 @@ BEGIN
     CLOSE v_poubelles_cursor;
 END //
 
--- Procédure pour déverrouiller une poubelle
-CREATE PROCEDURE IF NOT EXISTS `sp_deverrouiller_poubelle` (
-    IN p_poubelle_id VARCHAR(36),
-    IN p_code_badge VARCHAR(50)
-)
+-- Procédure pour obtenir l'état des poubelles
+CREATE PROCEDURE IF NOT EXISTS `sp_obtenir_etat_poubelles` ()
 BEGIN
-    DECLARE v_badge_valide BOOLEAN;
-    DECLARE v_utilisateur_id VARCHAR(36);
-    DECLARE v_type_evenement_id TINYINT;
-
-    SELECT EXISTS(
-        SELECT 1 FROM badge_deverrouillage
-         WHERE code = p_code_badge
-           AND actif = TRUE
-           AND date_expiration > NOW()
-    ) INTO v_badge_valide;
-
-    IF v_badge_valide THEN
-        SELECT utilisateur_id INTO v_utilisateur_id
-          FROM badge_deverrouillage
-         WHERE code = p_code_badge;
-
-        SELECT id INTO v_type_evenement_id
-          FROM type_evenement_historique
-         WHERE nom = 'OUVERTURE';
-
-        UPDATE poubelle
-           SET verrouille = FALSE
-         WHERE id = p_poubelle_id;
-
-        INSERT INTO historique (
-            id, poubelle_id, date, type_evenement_id, valeur, utilisateur_id
-        ) VALUES (
-            generate_uuid(), p_poubelle_id, NOW(),
-            v_type_evenement_id, NULL, v_utilisateur_id
-        );
-
-        SELECT TRUE AS succes, 'Poubelle déverrouillée avec succès' AS message;
-    ELSE
-        SELECT FALSE AS succes, 'Code de badge invalide ou expiré' AS message;
-    END IF;
+    SELECT 
+        p.id,
+        p.nom,
+        p.capacite_totale,
+        p.niveau_remplissage,
+        (p.niveau_remplissage / p.capacite_totale * 100) AS pourcentage_remplissage,
+        sp.nom AS statut,
+        p.latitude,
+        p.longitude,
+        p.adresse,
+        p.date_derniere_collecte,
+        p.seuil_alerte,
+        p.verrouille
+    FROM 
+        poubelle p
+    JOIN 
+        statut_poubelle sp ON p.statut_id = sp.id
+    ORDER BY 
+        pourcentage_remplissage DESC;
 END //
 
--- Procédure pour verrouiller une poubelle
-CREATE PROCEDURE IF NOT EXISTS `sp_verrouiller_poubelle` (
-    IN p_poubelle_id VARCHAR(36),
-    IN p_utilisateur_id VARCHAR(36) NULL
+-- Procédure pour générer un nouveau badge
+CREATE PROCEDURE IF NOT EXISTS `sp_generer_badge` (
+    IN p_nom VARCHAR(100),
+    IN p_type_badge VARCHAR(50),
+    IN p_utilisateur_id VARCHAR(36),
+    IN p_duree_validite INT -- en jours
 )
 BEGIN
-    DECLARE v_type_evenement_id TINYINT;
-
-    SELECT id INTO v_type_evenement_id
-      FROM type_evenement_historique
-     WHERE nom = 'FERMETURE';
-
-    UPDATE poubelle
-       SET verrouille = TRUE
-     WHERE id = p_poubelle_id;
-
-    INSERT INTO historique (
-        id, poubelle_id, date, type_evenement_id, valeur, utilisateur_id
-    ) VALUES (
-        generate_uuid(), p_poubelle_id, NOW(),
-        v_type_evenement_id, NULL, p_utilisateur_id
+    DECLARE v_badge_id VARCHAR(36);
+    DECLARE v_code VARCHAR(50);
+    DECLARE v_type_badge_id TINYINT;
+    
+    -- Générer un code unique pour le badge (combinaison de lettres et chiffres)
+    SET v_code = CONCAT(
+        UPPER(LEFT(UUID(), 8)),
+        FLOOR(RAND() * 10000)
     );
-
-    SELECT TRUE AS succes, 'Poubelle verrouillée avec succès' AS message;
+    
+    -- Obtenir l'ID du type de badge
+    SELECT id INTO v_type_badge_id
+      FROM type_badge
+     WHERE nom = p_type_badge;
+    
+    -- Générer un UUID pour le badge
+    SET v_badge_id = generate_uuid();
+    
+    -- Insérer le nouveau badge
+    INSERT INTO badge_deverrouillage (
+        id, code, nom, type_badge_id, date_creation, 
+        date_expiration, actif, utilisateur_id
+    ) VALUES (
+        v_badge_id, v_code, p_nom, v_type_badge_id, NOW(),
+        DATE_ADD(NOW(), INTERVAL p_duree_validite DAY), TRUE, p_utilisateur_id
+    );
+    
+    -- Retourner les informations du badge
+    SELECT 
+        bd.id,
+        bd.code,
+        bd.nom,
+        tb.nom AS type_badge,
+        bd.date_creation,
+        bd.date_expiration,
+        bd.actif,
+        CONCAT(u.prenom, ' ', u.nom) AS utilisateur
+    FROM 
+        badge_deverrouillage bd
+    JOIN 
+        type_badge tb ON bd.type_badge_id = tb.id
+    JOIN 
+        utilisateur u ON bd.utilisateur_id = u.id
+    WHERE 
+        bd.id = v_badge_id;
 END //
+
 DELIMITER ;
 
 -- -----------------------------------------------------
