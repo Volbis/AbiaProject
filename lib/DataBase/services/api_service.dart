@@ -65,4 +65,28 @@ class ApiService {
       throw Exception('Erreur API: $e');
     }
   }
+
+  static Future<List<Map<String, dynamic>>> getAllTrashBins() async {
+    try {
+      final response = await http.post(
+        Uri.parse(baseUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'action': 'get_all_bins'}),
+      );
+      
+      if (response.statusCode == 200) {
+        final result = jsonDecode(response.body);
+        if (result.containsKey('error')) {
+          throw Exception(result['error']);
+        }
+        return List<Map<String, dynamic>>.from(result['bins']);
+      } else {
+        throw Exception('Erreur HTTP: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Erreur API: $e');
+      throw Exception('Erreur lors de la récupération des poubelles: $e');
+    }
+  }
+
 }

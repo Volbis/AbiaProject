@@ -148,4 +148,5 @@ class TrashBin {
     required this.type,
     required this.address,
   });
+  
 }

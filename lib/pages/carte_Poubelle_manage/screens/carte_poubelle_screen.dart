@@ -573,8 +573,42 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
   void initState() {
     super.initState();
     _getCurrentLocation();
+
+    _loadTrashBins();
   }
 
+  Future<void> _loadTrashBins() async {
+    try {
+      print('Chargement des poubelles depuis l\'API...');
+      final binData = await ApiService.getAllTrashBins();
+      print('Données reçues: ${binData.length} poubelles');
+      print('Données brutes: $binData');
+      
+      setState(() {
+        // Conserver les poubelles statiques pour le développement
+        // final existingBins = [...trashBins];
+        trashBins.clear();
+        
+        int counter = 0;
+        for (var binJson in binData) {
+          try {
+            print('Traitement de la poubelle ${counter}: ${binJson['nomPoubelle']}');
+            final bin = TrashBin.fromJson(binJson);
+            trashBins.add(bin);
+            print('Poubelle ${counter} ajoutée: ${bin.nomPoubelle} à ${bin.latLng}');
+            counter++;
+          } catch (e) {
+            print('Erreur lors du traitement de la poubelle $counter: $e');
+          }
+        }
+        
+        print('${trashBins.length} poubelles chargées depuis la base de données');
+      });
+    } catch (e) {
+      print('Erreur lors du chargement des poubelles: $e');
+    }
+  }
+      
   @override
   void dispose() {
     super.dispose();
@@ -974,220 +1008,220 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
   }
 
   /// Construit la fenêtre d'information pour une poubelle
-Widget _buildTrashBinInfoWindow(TrashBin bin) {
-  return Container(
-    decoration: BoxDecoration(
-      color: const Color.fromARGB(230, 238, 230, 255), // Couleur de fond violette claire
-      borderRadius: BorderRadius.circular(20),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withOpacity(0.1),
-          spreadRadius: 1,
-          blurRadius: 6,
-          offset: const Offset(0, 2),
-        ),
-      ],
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // En-tête avec icône et texte
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: const BoxDecoration(
-            color: Color(0xFFE1D5FF), // Couleur légèrement plus foncée pour l'en-tête
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(16),
-              topRight: Radius.circular(16),
+  Widget _buildTrashBinInfoWindow(TrashBin bin) {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color.fromARGB(230, 238, 230, 255), // Couleur de fond violette claire
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // En-tête avec icône et texte
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: const BoxDecoration(
+              color: Color(0xFFE1D5FF), // Couleur légèrement plus foncée pour l'en-tête
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(16),
+                topRight: Radius.circular(16),
+              ),
+            ),
+            child: Row(
+              children: [
+                // Icône dans un cercle
+                Container(
+                  width: 24,
+                  height: 24,
+                  decoration: const BoxDecoration(
+                    color: AppColors.primaryColor, // Couleur violette plus foncée
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Center(
+                    child: Icon(
+                      Icons.delete_outline_rounded,
+                      color: Colors.white,
+                      size: 16,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                // Titre de l'infobulle
+                Text(
+                  "Poubelle: ${bin.nomPoubelle} ",
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: AppColors.secondaryColor, // Texte violet foncé
+                  ),
+                ),
+              ],
             ),
           ),
-          child: Row(
-            children: [
-              // Icône dans un cercle
-              Container(
-                width: 24,
-                height: 24,
-                decoration: const BoxDecoration(
-                  color: AppColors.primaryColor, // Couleur violette plus foncée
-                  shape: BoxShape.circle,
-                ),
-                child: const Center(
-                  child: Icon(
-                    Icons.delete_outline_rounded,
-                    color: Colors.white,
-                    size: 16,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              // Titre de l'infobulle
-              Text(
-                "Poubelle: ${bin.nomPoubelle} ",
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                  color: AppColors.secondaryColor, // Texte violet foncé
-                ),
-              ),
-            ],
-          ),
-        ),
-        // Corps de l'infobulle
-        Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(height: 12),
+          // Corps de l'infobulle
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(height: 12),
 
-              // status de la poubelle
-              Row(
-                children: [
-                  const Text(
-                    "Statut : ",
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF6A6A6A),
-                    ),
-                  ),
-                  Container(
-                    width: 12,
-                    height: 12,
-                    decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                      color: _getFillLevelColor(bin.status),
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    _getFillLevelText(bin.status),
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: _getFillLevelColor(bin.status),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-
-                // Taux de remplissage
-              Row(
-                children: [
-                  const Text(
-                    "Taux de remplissage : ",
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF6A6A6A),
-                    ),
-                  ),
-                  Text(
-                    // Utilisez l'opérateur ?? pour gérer le cas null
-                    "${(bin.fillPercentage ?? 0.0).toInt()} %",
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: _getFillLevelColor(bin.status),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-
-              // Etat de verrouillage
-              Row(
-                children: [
-                  const Text(
-                    "État : ",
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF6A6A6A),
-                    ),
-                  ),
-                  Icon(
-                    bin.verrouille ? Icons.lock : Icons.lock_open,
-                    size: 16,
-                    color: bin.verrouille ? Colors.red : Colors.green,
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    bin.verrouille ? "Verrouillée" : "Déverrouillée",
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                              color: bin.verrouille ? Colors.red : Colors.green,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-
-              // Localisation de la poubelle 
-              Row(
-                children: [
-                  const Text(
-                    "Localisation : ",
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF6A6A6A),
-                    ),
-                  ),
-                  Expanded(
-                    child: Text(
-                      bin.address,
-                      style: const TextStyle(
+                // status de la poubelle
+                Row(
+                  children: [
+                    const Text(
+                      "Statut : ",
+                      style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF444444),
+                        color: Color(0xFF6A6A6A),
                       ),
-                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
- 
-              // Boutons
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: () {
-                      setState(() {
-                        showInfoWindow = false;
-                      });
-                    },
-                    style: TextButton.styleFrom(
-                       foregroundColor: Colors.white,
-                      backgroundColor: AppColors.primaryColor,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                    Container(
+                      width: 12,
+                      height: 12,
+                      decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                        color: _getFillLevelColor(bin.status),
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     ),
-                    child: const Text(
-                      'Fermer',
-                          style: TextStyle(
+                    const SizedBox(width: 6),
+                    Text(
+                      _getFillLevelText(bin.status),
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: _getFillLevelColor(bin.status),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                  // Taux de remplissage
+                Row(
+                  children: [
+                    const Text(
+                      "Taux de remplissage : ",
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF6A6A6A),
+                      ),
+                    ),
+                    Text(
+                      // Utilisez l'opérateur ?? pour gérer le cas null
+                      "${(bin.fillPercentage ?? 0.0).toInt()} %",
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: _getFillLevelColor(bin.status),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                // Etat de verrouillage
+                Row(
+                  children: [
+                    const Text(
+                      "État : ",
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF6A6A6A),
+                      ),
+                    ),
+                    Icon(
+                      bin.verrouille ? Icons.lock : Icons.lock_open,
+                      size: 16,
+                      color: bin.verrouille ? Colors.red : Colors.green,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      bin.verrouille ? "Verrouillée" : "Déverrouillée",
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                                color: bin.verrouille ? Colors.red : Colors.green,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                // Localisation de la poubelle 
+                Row(
+                  children: [
+                    const Text(
+                      "Localisation : ",
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF6A6A6A),
+                      ),
+                    ),
+                    Expanded(
+                      child: Text(
+                        bin.address,
+                        style: const TextStyle(
+                          fontSize: 14,
                           fontWeight: FontWeight.bold,
-                          fontSize: 13,  // Optionnel: ajuster la taille du texte si nécessaire
+                          color: Color(0xFF444444),
                         ),
+                        overflow: TextOverflow.ellipsis,
                       ),
-                  ),
-                ],
-              ),
-            ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+  
+                // Boutons
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () {
+                        setState(() {
+                          showInfoWindow = false;
+                        });
+                      },
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        backgroundColor: AppColors.primaryColor,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      ),
+                      child: const Text(
+                        'Fermer',
+                            style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,  // Optionnel: ajuster la taille du texte si nécessaire
+                          ),
+                        ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-        ),
-      
-      ],
-    ),
-  );
-}
+        
+        ],
+      ),
+    );
+  }
 
 }
 
@@ -1217,4 +1251,59 @@ class TrashBin {
     this.verrouille = true,
   
   });
+
+  // Méthode pour convertir le statut en couleur
+  factory TrashBin.fromJson(Map<String, dynamic> json) {
+    // Gestion du statut (avec valeur par défaut si null)
+    Status status = Status.empty;  // Valeur par défaut
+    if (json['statut'] != null) {
+      switch (json['statut']) {
+        case 'VIDE':
+          status = Status.empty;
+          break;
+        case 'A_MOITIE_PLEINE':
+          status = Status.medium;
+          break;
+        case 'PLEINE':
+          status = Status.full;
+          break;
+      }
+    }
+    
+    // Déterminer le taux de remplissage initial basé sur le statut
+    double fillPercentage;
+    switch (status) {
+      case Status.empty:
+        fillPercentage = 10.0;
+        break;
+      case Status.medium:
+        fillPercentage = 50.0;
+        break;
+      case Status.full:
+        fillPercentage = 90.0;
+        break;
+      default:
+        fillPercentage = 0.0;
+    }
+    
+    // Gestion des valeurs par défaut pour les autres champs
+    double capacite = (json['capaciteTotale'] != null && json['capaciteTotale'] != 0) 
+        ? (json['capaciteTotale']).toDouble() 
+        : 100.0;
+    
+    return TrashBin(
+      nomPoubelle: json['nomPoubelle'] ?? 'Sans nom',
+      latLng: latlong.LatLng(
+        json['latitude'] ?? 0.0, 
+        json['longitude'] ?? 0.0
+      ),
+      address: json['address'] ?? 'Adresse inconnue',
+      status: status,
+      fillPercentage: fillPercentage,
+      capaciteTotale: capacite,
+      verrouille: json['verrouille'] ?? true,
+      seuilAlerte: 0.9,
+    );
+  }
+
 }
