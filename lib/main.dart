@@ -14,7 +14,8 @@ import 'pages/notifications/controllers/notification_controller.dart';
 // Importations des pages
 import 'pages/authentification/screens/login_screen.dart';
 import 'pages/carte_Poubelle_manage/screens/carte_poubelle_screen.dart';
-//import 'pages/dashboard/screens/dashboard_screen.dart';
+import 'pages/collecte/screens/collecte_screen.dart';
+import 'pages/collecte/screens/collecte_screen.dart'; // Assurez-vous que cette importation est correcte
 
 void main() {
   // Assurez-vous que Flutter est initialisé
@@ -23,15 +24,18 @@ void main() {
   // Initialiser les contrôleurs de chaque page
   final authController = AuthController();
   final trashMapController = TrashMapController();
+  final collecteController = CollecteController();
   
-  /*final dashboardController = DashboardController();
+/*
+  final dashboardController = DashboardController();
   final collecteController = CollecteController();
   final carteController = CarteController();
   final notificationController = NotificationController();
-  */
+*/
   runApp(MyApp(
     authController: authController,
     trashMapController: trashMapController,
+    collecteController: collecteController, 
     //dashboardController: dashboardController,
   ));
 }
@@ -39,18 +43,21 @@ void main() {
 class MyApp extends StatelessWidget {
   final AuthController authController;
   final TrashMapController trashMapController;
+  final CollecteController collecteController;
   //final DashboardController dashboardController;
   
   const MyApp({
     super.key, 
     required this.authController, 
     required this.trashMapController,
+    required this.collecteController,
     //required this.dashboardController
   });
    
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Abia - La Poubelle Intelligente',
       theme: ThemeData(
         fontFamily: 'Poppins',
@@ -94,8 +101,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/login': (context) => LoginScreen(authController: authController),
         '/map': (context) => TrashMapScreen(trashMapController: trashMapController),
-        //'/dashboard': (context) => DashboardScreen(dashboardController: dashboardController),
-        // Ajoutez ici les autres routes
+        '/historique-collectes': (context) => HistoriqueCollectesView(collecteController: collecteController),
       },
     );
   }

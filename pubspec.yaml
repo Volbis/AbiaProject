@@ -40,6 +40,7 @@ dependencies:
   flutter_svg: ^2.0.9
   geocoding: ^3.0.0
   mysql1: ^0.19.2
+  get: ^4.7.2
 
 
   # Localisation

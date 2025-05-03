@@ -628,7 +628,7 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
             options: MapOptions(
               initialCenter: _currentPosition != null
                   ? latlong.LatLng(_currentPosition!.latitude, _currentPosition!.longitude)
-                  : latlong.LatLng(48.8566, 2.3522),
+                  : latlong.LatLng(5.288968, -3.999097), 
               initialZoom: 18,
               onTap: (tapPosition, point) {
                   if (_isAddingTrashBin) {
