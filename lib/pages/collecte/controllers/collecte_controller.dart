@@ -1,39 +1,15 @@
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:latlong2/latlong.dart' as latlong;
-
-// Enumération pour le statut des poubelles
-enum Status {
-  vide,
-  normal,
-  remplie,
-  critique,
-  horsService
-}
+import 'package:flutter/foundation.dart';
 
 class TrashBin {
-  final String id;
   final String nomPoubelle;
-  final latlong.LatLng latLng;
   final String address;
-  final Status status;
-  final double fillPercentage;
   final double capaciteTotale;
-  final double seuilAlerte;
-  final bool verrouille;
-  final String binColor; // blue, green, orange, grey
 
   TrashBin({
-    required this.id,
     required this.nomPoubelle,
-    required this.latLng,
     required this.address,
-    required this.status,
-    required this.fillPercentage,
     required this.capaciteTotale,
-    required this.seuilAlerte,
-    required this.verrouille,
-    required this.binColor,
   });
 }
 
@@ -43,8 +19,8 @@ class Collection {
   final String binColor;
   final String truckName;
   final DateTime collectionTime;
-  final TrashBin? trashBin; // Référence à la poubelle associée à cette collecte
-  final double quantiteCollectee; // Quantité de déchets collectés
+  final double quantiteCollectee;
+  final TrashBin? trashBin;
 
   Collection({
     required this.id,
@@ -52,372 +28,111 @@ class Collection {
     required this.binColor,
     required this.truckName,
     required this.collectionTime,
+    required this.quantiteCollectee,
     this.trashBin,
-    this.quantiteCollectee = 0.0,
   });
 }
 
 class CollecteController extends GetxController {
-  // Observable list for collection history
+  // Données statiques directement dans les variables observables
+  final RxBool isLoading = false.obs; // Initialiser à false pour un chargement immédiat
   final RxList<Collection> collections = <Collection>[].obs;
-  final RxList<TrashBin> trashBins = <TrashBin>[].obs;
-  final RxBool isLoading = true.obs;
-  
-  // Pour filtrer les collectes par jour/semaine/mois/année (fonctionnalité supplémentaire)
-  final Rx<String> filterType = 'all'.obs;
+
+  // Constructeur avec initialisation immédiate des données
+  CollecteController() {
+    // Pré-remplir avec les données statiques
+    collections.addAll(_generateTestData());
+    if (kDebugMode) {
+      print("Contrôleur initialisé avec ${collections.length} collectes");
+    }
+  }
 
   @override
   void onInit() {
     super.onInit();
-    fetchTrashBins();
-    fetchCollections();
-  }
-
-  // Récupérer les poubelles
-  Future<void> fetchTrashBins() async {
-    try {
-      // Simulation d'une récupération de poubelles à partir d'une API
-      await Future.delayed(const Duration(milliseconds: 800));
-      
-      // Données d'exemple
-      trashBins.value = [
-        TrashBin(
-          id: 'CD453',
-          nomPoubelle: 'Poubelle Alpha',
-          latLng: latlong.LatLng(48.8566, 2.3522), // Paris
-          address: '15 Rue de la Paix, Paris',
-          status: Status.normal,
-          fillPercentage: 45.0,
-          capaciteTotale: 100.0,
-          seuilAlerte: 80.0,
-          verrouille: true,
-          binColor: 'blue',
-        ),
-        TrashBin(
-          id: 'DC254',
-          nomPoubelle: 'Poubelle Beta',
-          latLng: latlong.LatLng(48.8584, 2.3505), // Paris proche
-          address: '8 Avenue de l\'Opéra, Paris',
-          status: Status.remplie,
-          fillPercentage: 78.0,
-          capaciteTotale: 120.0,
-          seuilAlerte: 90.0,
-          verrouille: false,
-          binColor: 'green',
-        ),
-        TrashBin(
-          id: 'DV435',
-          nomPoubelle: 'Poubelle Sigma',
-          latLng: latlong.LatLng(48.8738, 2.3749), // Paris autre quartier
-          address: '25 Rue du Faubourg du Temple, Paris',
-          status: Status.critique,
-          fillPercentage: 95.0,
-          capaciteTotale: 150.0,
-          seuilAlerte: 85.0,
-          verrouille: true,
-          binColor: 'orange',
-        ),
-        TrashBin(
-          id: 'AG346',
-          nomPoubelle: 'Poubelle Gama',
-          latLng: latlong.LatLng(48.8600, 2.3400), // Paris autre zone
-          address: '12 Rue de Rivoli, Paris',
-          status: Status.vide,
-          fillPercentage: 10.0,
-          capaciteTotale: 100.0,
-          seuilAlerte: 80.0,
-          verrouille: true,
-          binColor: 'blue',
-        ),
-        TrashBin(
-          id: 'AK117',
-          nomPoubelle: 'Poubelle Delta',
-          latLng: latlong.LatLng(48.8500, 2.3400), // Paris sud
-          address: '45 Boulevard Saint-Germain, Paris',
-          status: Status.horsService,
-          fillPercentage: 0.0,
-          capaciteTotale: 120.0,
-          seuilAlerte: 90.0,
-          verrouille: false,
-          binColor: 'grey',
-        ),
-      ];
-    } catch (e) {
-      debugPrint('Error fetching trash bins: $e');
-      Get.snackbar(
-        'Erreur',
-        'Impossible de récupérer les poubelles',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
+    // Pas besoin d'appeler fetchCollections() car les données sont déjà chargées
+    if (kDebugMode) {
+      print("onInit appelé, collections: ${collections.length}");
     }
   }
 
-  // Fetch collection history
-  Future<void> fetchCollections() async {
-    isLoading.value = true;
+  // Génère des données de test pour l'historique des collectes
+  List<Collection> _generateTestData() {
+    final data = [
+      Collection(
+        id: 'COL-1234',
+        binType: 'Poubelle',
+        binColor: 'blue',
+        truckName: 'Camion A-001',
+        collectionTime: DateTime.now().subtract(const Duration(hours: 5)),
+        quantiteCollectee: 18.5,
+        trashBin: TrashBin(
+          nomPoubelle: 'P-Marché Central',
+          address: 'Avenue du Marché, Quartier Centre',
+          capaciteTotale: 120.0,
+        ),
+      ),
+      Collection(
+        id: 'COL-1235',
+        binType: 'Bac',
+        binColor: 'green',
+        truckName: 'Camion B-002',
+        collectionTime: DateTime.now().subtract(const Duration(days: 1, hours: 2)),
+        quantiteCollectee: 45.2,
+        trashBin: TrashBin(
+          nomPoubelle: 'B-Hôpital Général',
+          address: 'Rue Santé, Zone Médicale',
+          capaciteTotale: 240.0,
+        ),
+      ),
+      Collection(
+        id: 'COL-1236',
+        binType: 'Conteneur',
+        binColor: 'grey',
+        truckName: 'Camion A-003',
+        collectionTime: DateTime.now().subtract(const Duration(days: 2)),
+        quantiteCollectee: 120.0,
+        trashBin: TrashBin(
+          nomPoubelle: 'C-Zone Industrielle',
+          address: 'Boulevard Industriel, Secteur Est',
+          capaciteTotale: 500.0,
+        ),
+      ),
+      Collection(
+        id: 'COL-1237',
+        binType: 'Poubelle',
+        binColor: 'orange',
+        truckName: 'Camion C-001',
+        collectionTime: DateTime.now().subtract(const Duration(days: 3, hours: 8)),
+        quantiteCollectee: 22.7,
+        trashBin: TrashBin(
+          nomPoubelle: 'P-École Primaire',
+          address: 'Rue de l\'Éducation, Quartier Sud',
+          capaciteTotale: 120.0,
+        ),
+      ),
+    ];
     
-    try {
-      // Simulate API call with a delay
-      await Future.delayed(const Duration(seconds: 1));
-      
-      // Mock data to match the UI in the image
-      collections.value = [
-        Collection(
-          id: 'COL-001',
-          binType: 'Poubelle',
-          binColor: 'blue',
-          truckName: 'Truck Alpha',
-          collectionTime: DateTime.now().subtract(const Duration(minutes: 5)),
-          trashBin: trashBins.isNotEmpty ? trashBins[0] : null,
-          quantiteCollectee: 45.0,
-        ),
-        Collection(
-          id: 'COL-002',
-          binType: 'Poubelle',
-          binColor: 'green',
-          truckName: 'Truck Beta',
-          collectionTime: DateTime.now().subtract(const Duration(minutes: 34)),
-          trashBin: trashBins.length > 1 ? trashBins[1] : null,
-          quantiteCollectee: 78.0,
-        ),
-        Collection(
-          id: 'COL-003',
-          binType: 'Poubelle',
-          binColor: 'orange',
-          truckName: 'Truck Sigma',
-          collectionTime: DateTime.now().subtract(const Duration(hours: 4)),
-          trashBin: trashBins.length > 2 ? trashBins[2] : null,
-          quantiteCollectee: 95.0,
-        ),
-        Collection(
-          id: 'COL-004',
-          binType: 'Poubelle',
-          binColor: 'blue',
-          truckName: 'Truck Gama',
-          collectionTime: DateTime.now().subtract(const Duration(hours: 12)),
-          trashBin: trashBins.length > 3 ? trashBins[3] : null,
-          quantiteCollectee: 10.0,
-        ),
-        Collection(
-          id: 'COL-005',
-          binType: 'Poubelle',
-          binColor: 'grey',
-          truckName: 'Truck Delta',
-          collectionTime: DateTime.now().subtract(const Duration(hours: 15)),
-          trashBin: trashBins.length > 4 ? trashBins[4] : null,
-          quantiteCollectee: 0.0,
-        ),
-        Collection(
-          id: 'COL-006',
-          binType: 'Poubelle',
-          binColor: 'orange',
-          truckName: 'Truck Sigma',
-          collectionTime: DateTime.now().subtract(const Duration(days: 1)),
-          trashBin: trashBins.length > 2 ? trashBins[2] : null,
-          quantiteCollectee: 85.0,
-        ),
-      ];
-    } catch (e) {
-      // Handle errors
-      debugPrint('Error fetching collections: $e');
-      Get.snackbar(
-        'Erreur',
-        'Impossible de récupérer l\'historique des collectes',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
-    } finally {
-      isLoading.value = false;
+    if (kDebugMode) {
+      print("Données de test générées: ${data.length} collectes");
     }
+    
+    return data;
   }
 
-  // Format time difference
+  // Convertit un DateTime en texte "il y a X temps"
   String getTimeAgo(DateTime dateTime) {
     final now = DateTime.now();
     final difference = now.difference(dateTime);
 
     if (difference.inDays > 0) {
-      return 'il y a ${difference.inDays} j';
+      return 'il y a ${difference.inDays} jour${difference.inDays > 1 ? 's' : ''}';
     } else if (difference.inHours > 0) {
-      return 'il y a ${difference.inHours} h';
+      return 'il y a ${difference.inHours} heure${difference.inHours > 1 ? 's' : ''}';
     } else if (difference.inMinutes > 0) {
-      return 'il y a ${difference.inMinutes} min';
+      return 'il y a ${difference.inMinutes} minute${difference.inMinutes > 1 ? 's' : ''}';
     } else {
-      return 'À l\'instant';
-    }
-  }
-  
-  // Filtrer les collectes selon une période
-  void setFilter(String type) {
-    filterType.value = type;
-    fetchFilteredCollections();
-  }
-  
-  // Récupérer les collectes filtrées
-  Future<void> fetchFilteredCollections() async {
-    isLoading.value = true;
-    
-    try {
-      await Future.delayed(const Duration(milliseconds: 500));
-      
-      // Dans une application réelle, vous feriez un appel API avec le filtre
-      // Ici, nous simulons juste un filtrage sur les données existantes
-      final DateTime now = DateTime.now();
-      final List<Collection> allCollections = [
-        Collection(
-          id: 'COL-001',
-          binType: 'Poubelle',
-          binColor: 'blue',
-          truckName: 'Truck Alpha',
-          collectionTime: now.subtract(const Duration(minutes: 5)),
-          trashBin: trashBins.isNotEmpty ? trashBins[0] : null,
-          quantiteCollectee: 45.0,
-        ),
-        Collection(
-          id: 'COL-002',
-          binType: 'Poubelle',
-          binColor: 'green',
-          truckName: 'Truck Beta',
-          collectionTime: now.subtract(const Duration(minutes: 34)),
-          trashBin: trashBins.length > 1 ? trashBins[1] : null,
-          quantiteCollectee: 78.0,
-        ),
-        Collection(
-          id: 'COL-003',
-          binType: 'Poubelle',
-          binColor: 'orange',
-          truckName: 'Truck Sigma',
-          collectionTime: now.subtract(const Duration(hours: 4)),
-          trashBin: trashBins.length > 2 ? trashBins[2] : null,
-          quantiteCollectee: 95.0,
-        ),
-        Collection(
-          id: 'COL-004',
-          binType: 'Poubelle',
-          binColor: 'blue',
-          truckName: 'Truck Gama',
-          collectionTime: now.subtract(const Duration(hours: 12)),
-          trashBin: trashBins.length > 3 ? trashBins[3] : null,
-          quantiteCollectee: 10.0,
-        ),
-        Collection(
-          id: 'COL-005',
-          binType: 'Poubelle',
-          binColor: 'grey',
-          truckName: 'Truck Delta',
-          collectionTime: now.subtract(const Duration(hours: 15)),
-          trashBin: trashBins.length > 4 ? trashBins[4] : null,
-          quantiteCollectee: 0.0,
-        ),
-        Collection(
-          id: 'COL-006',
-          binType: 'Poubelle',
-          binColor: 'orange',
-          truckName: 'Truck Sigma',
-          collectionTime: now.subtract(const Duration(days: 1)),
-          trashBin: trashBins.length > 2 ? trashBins[2] : null,
-          quantiteCollectee: 85.0,
-        ),
-        Collection(
-          id: 'COL-007',
-          binType: 'Poubelle',
-          binColor: 'green',
-          truckName: 'Truck Omega',
-          collectionTime: now.subtract(const Duration(days: 3)),
-          trashBin: trashBins.length > 1 ? trashBins[1] : null,
-          quantiteCollectee: 65.0,
-        ),
-        Collection(
-          id: 'COL-008',
-          binType: 'Poubelle',
-          binColor: 'blue',
-          truckName: 'Truck Zeta',
-          collectionTime: now.subtract(const Duration(days: 7)),
-          trashBin: trashBins.isNotEmpty ? trashBins[0] : null,
-          quantiteCollectee: 90.0,
-        ),
-      ];
-      
-      switch (filterType.value) {
-        case 'today':
-          collections.value = allCollections.where((c) => 
-            c.collectionTime.day == now.day && 
-            c.collectionTime.month == now.month && 
-            c.collectionTime.year == now.year
-          ).toList();
-          break;
-        case 'week':
-          final weekAgo = now.subtract(const Duration(days: 7));
-          collections.value = allCollections.where((c) => 
-            c.collectionTime.isAfter(weekAgo)
-          ).toList();
-          break;
-        case 'month':
-          collections.value = allCollections.where((c) => 
-            c.collectionTime.month == now.month && 
-            c.collectionTime.year == now.year
-          ).toList();
-          break;
-        default:
-          collections.value = allCollections;
-      }
-    } catch (e) {
-      debugPrint('Error filtering collections: $e');
-    } finally {
-      isLoading.value = false;
-    }
-  }
-  
-  // Fonction pour obtenir les détails d'une collection spécifique
-  Collection? getCollectionDetails(String id) {
-    try {
-      return collections.firstWhere((element) => element.id == id);
-    } catch (e) {
-      return null;
-    }
-  }
-  
-  // Fonction pour obtenir une poubelle spécifique par ID
-  TrashBin? getTrashBin(String id) {
-    try {
-      return trashBins.firstWhere((bin) => bin.id == id);
-    } catch (e) {
-      return null;
-    }
-  }
-  
-  // Fonction pour obtenir la couleur correcte à partir du statut
-  Color getStatusColor(Status status) {
-    switch (status) {
-      case Status.vide:
-        return Colors.green;
-      case Status.normal:
-        return Colors.blue;
-      case Status.remplie:
-        return Colors.orange;
-      case Status.critique:
-        return Colors.red;
-      case Status.horsService:
-        return Colors.grey;
-    }
-  }
-  
-  // Fonction pour obtenir le texte du statut
-  String getStatusText(Status status) {
-    switch (status) {
-      case Status.vide:
-        return 'Vide';
-      case Status.normal:
-        return 'Normal';
-      case Status.remplie:
-        return 'Remplie';
-      case Status.critique:
-        return 'Critique';
-      case Status.horsService:
-        return 'Hors Service';
+      return 'à l\'instant';
     }
   }
 }

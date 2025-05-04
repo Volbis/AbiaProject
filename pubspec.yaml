@@ -41,6 +41,7 @@ dependencies:
   geocoding: ^3.0.0
   mysql1: ^0.19.2
   get: ^4.7.2
+  fl_chart: ^0.63.0
 
 
   # Localisation

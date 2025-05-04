@@ -101,7 +101,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/login': (context) => LoginScreen(authController: authController),
         '/map': (context) => TrashMapScreen(trashMapController: trashMapController),
-        '/historique-collectes': (context) => HistoriqueCollectesView(collecteController: collecteController),
+        '/collecte': (context) => HistoriqueCollectesView(collecteController: collecteController),
       },
     );
   }

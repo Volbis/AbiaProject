@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 import '../controllers/collecte_controller.dart';
 import '../../../common/theme/app_theme.dart';
+import '../../../partagés/widgets_partagés/nav_bar_avec_plus.dart';
+import 'package:get/get.dart';
 
 class HistoriqueCollectesView extends StatelessWidget {
   final CollecteController collecteController;
@@ -9,95 +12,130 @@ class HistoriqueCollectesView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Pour déboguer: forcer isLoading à false après 5 secondes
+    Future.delayed(Duration(seconds: 5), () {
+      if (collecteController.isLoading.value) {
+        collecteController.isLoading.value = false;
+      }
+    });
+    
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        title: const Text(
-          'Historiques des collectes',
-          style: TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-          ),
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.black, size: 20),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      body: ValueListenableBuilder<bool>(
-        valueListenable: ValueNotifier(collecteController.isLoading.value),
-        builder: (context, isLoading, _) {
-          if (isLoading) {
-            return const Center(
-              child: CircularProgressIndicator(
-                color: AppColors.primaryColor,
-              ),
-            );
-          }
-          
-          final collections = collecteController.collections;
-          if (collections.isEmpty) {
-            return const Center(
-              child: Text(
-                'Aucun historique de collecte',
-                style: TextStyle(
-                  color: Colors.grey,
-                  fontSize: 16,
+      // Suppression de l'AppBar
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+          // En-tête personnalisé avec le texte et bouton retour
+          Padding(
+            padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center, // Centrer les éléments dans la rangée
+              children: [
+                const Text(
+                  'Historiques des collectes',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                  ),
                 ),
-              ),
-            );
-          }
-          
-          return ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            itemCount: collections.length,
-            itemBuilder: (context, index) {
-              final collection = collections[index];
-              return CollectionTile(collection: collection, controller: collecteController);
-            },
-          );
-        },
-      ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              spreadRadius: 1,
+              ],
+            ),
+          ),
+            // Contenu principal
+            Expanded(
+              child: Obx(() {
+                // Afficher les informations de débogage
+                print("IsLoading: ${collecteController.isLoading.value}");
+                print("Collections: ${collecteController.collections.length}");
+                
+                if (collecteController.isLoading.value) {
+                  return const Center(
+                    child: CircularProgressIndicator(
+                      color: AppColors.primaryColor,
+                    ),
+                  );
+                }
+                
+                final collections = collecteController.collections;
+                if (collections.isEmpty) {
+                  return const Center(
+                    child: Text(
+                      'Aucun historique de collecte',
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontSize: 16,
+                      ),
+                    ),
+                  );
+                }
+                
+                return ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  itemCount: collections.length,
+                  itemBuilder: (context, index) {
+                    final collection = collections[index];
+                    return CollectionTile(collection: collection, controller: collecteController);
+                  },
+                );
+              }),
             ),
           ],
         ),
-        height: 70,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            _buildNavBarItem(Icons.person_outline, 0),
-            _buildNavBarItem(Icons.bar_chart, 1, isSelected: true),
-            _buildNavBarItem(Icons.chat_bubble_outline, 2),
-            _buildNavBarItem(Icons.notifications_none, 3),
-          ],
-        ),
       ),
-    );
-  }
-  
-  Widget _buildNavBarItem(IconData icon, int index, {bool isSelected = false}) {
-    return Container(
-      width: 45,
-      height: 45,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: isSelected ? AppColors.primaryColor.withOpacity(0.1) : Colors.transparent,
-      ),
-      child: Icon(
-        icon,
-        color: isSelected ? AppColors.primaryColor : Colors.grey,
-        size: 24,
+      bottomNavigationBar: NavBarAvecPlus(
+        initialPage: 3, // Index pour la page des collectes
+        onPageChanged: (index) {
+          // Navigation standardisée
+          if (index == 3) return; // Déjà sur cette page
+          
+          switch (index) {
+            case 0:
+              Navigator.pushReplacementNamed(context, '/map');
+              break;
+            case 1:
+              Navigator.pushReplacementNamed(context, '/stats');
+              break;
+            case 2:
+              // Position du bouton +, gérer séparément
+              break;
+            case 4:
+              Navigator.pushReplacementNamed(context, '/profile');
+              break;
+          }
+        },
+        onPlusButtonPressed: () {
+          // Action du bouton + spécifique à cette page
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Ajouter une collecte'),
+              content: const Text('Fonctionnalité à implémenter'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Fermer'),
+                ),
+              ],
+            ),
+          );
+        },
+        useSvgIcons: false,
+        icons: const [
+          Symbols.distance_rounded,
+          Icons.bar_chart_rounded,
+          Icons.add,
+          Symbols.delivery_truck_bolt_rounded,
+          Symbols.notifications_unread_rounded,
+        ],
+        colors: const [
+          AppColors.primaryColor,
+          AppColors.primaryColor,
+          AppColors.primaryColor,
+          AppColors.primaryColor,
+          AppColors.primaryColor,
+        ],
       ),
     );
   }
