@@ -35,7 +35,7 @@ class Collection {
 
 class CollecteController extends GetxController {
   // Données statiques directement dans les variables observables
-  final RxBool isLoading = false.obs; // Initialiser à false pour un chargement immédiat
+  final RxBool isLoading = false.obs; 
   final RxList<Collection> collections = <Collection>[].obs;
 
   // Constructeur avec initialisation immédiate des données

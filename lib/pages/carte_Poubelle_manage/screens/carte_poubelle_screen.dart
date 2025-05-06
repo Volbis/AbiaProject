@@ -840,7 +840,7 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
                     Navigator.pushReplacementNamed(context, '/home');
                     break;
                   case 1:
-                    // Déjà sur cette page
+                    Navigator.pushReplacementNamed(context, '/dashboard');
                     break;
                   case 3:
                     Navigator.pushReplacementNamed(context, '/collecte');

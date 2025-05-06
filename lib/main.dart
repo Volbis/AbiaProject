@@ -14,8 +14,8 @@ import 'pages/notifications/controllers/notification_controller.dart';
 // Importations des pages
 import 'pages/authentification/screens/login_screen.dart';
 import 'pages/carte_Poubelle_manage/screens/carte_poubelle_screen.dart';
-import 'pages/collecte/screens/collecte_screen.dart';
 import 'pages/collecte/screens/collecte_screen.dart'; // Assurez-vous que cette importation est correcte
+import 'pages/dashboard/screens/dashboard_screens.dart'; // Add this import
 
 void main() {
   // Assurez-vous que Flutter est initialisé
@@ -25,7 +25,8 @@ void main() {
   final authController = AuthController();
   final trashMapController = TrashMapController();
   final collecteController = CollecteController();
-  
+  final dashboardController = DashboardController(); 
+
 /*
   final dashboardController = DashboardController();
   final collecteController = CollecteController();
@@ -36,7 +37,7 @@ void main() {
     authController: authController,
     trashMapController: trashMapController,
     collecteController: collecteController, 
-    //dashboardController: dashboardController,
+    dashboardController: dashboardController,
   ));
 }
 
@@ -44,14 +45,14 @@ class MyApp extends StatelessWidget {
   final AuthController authController;
   final TrashMapController trashMapController;
   final CollecteController collecteController;
-  //final DashboardController dashboardController;
+  final DashboardController dashboardController;
   
   const MyApp({
     super.key, 
     required this.authController, 
     required this.trashMapController,
     required this.collecteController,
-    //required this.dashboardController
+    required this.dashboardController
   });
    
   @override
@@ -102,6 +103,8 @@ class MyApp extends StatelessWidget {
         '/login': (context) => LoginScreen(authController: authController),
         '/map': (context) => TrashMapScreen(trashMapController: trashMapController),
         '/collecte': (context) => HistoriqueCollectesView(collecteController: collecteController),
+        '/dashboard': (context) => DashboardScreen(dashboardController: dashboardController),  
+
       },
     );
   }
