@@ -162,6 +162,7 @@ CREATE TABLE IF NOT EXISTS `poubelle` (
   `date_derniere_collecte` DATETIME NULL,
   `seuil_alerte` FLOAT NOT NULL DEFAULT 0.9,
   `verrouille` BOOLEAN NOT NULL DEFAULT TRUE,
+  `alerte` BOOLEAN NOT NULL DEFAULT FALSE,
   PRIMARY KEY (`id`),
   INDEX `fk_poubelle_statut_idx` (`statut_id`),
   CONSTRAINT `fk_poubelle_statut`
