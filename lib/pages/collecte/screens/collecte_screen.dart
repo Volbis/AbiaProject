@@ -107,6 +107,9 @@ class HistoriqueCollectesView extends StatelessWidget {
             case 3:
               Navigator.pushReplacementNamed(context, '/notifications');
               break;
+            case 4:
+              Navigator.pushReplacementNamed(context, '/notifications');
+              break;
           }
         },
         useSvgIcons: false,

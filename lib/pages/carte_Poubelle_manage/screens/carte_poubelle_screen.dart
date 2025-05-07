@@ -846,7 +846,7 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
                     Navigator.pushReplacementNamed(context, '/collecte');
                     break;
                   case 4:
-                    Navigator.pushReplacementNamed(context, '/profile');
+                    Navigator.pushReplacementNamed(context, '/notifications');
                     break;
                 }
               },

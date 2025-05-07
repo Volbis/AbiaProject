@@ -15,7 +15,9 @@ import 'pages/notifications/controllers/notification_controller.dart';
 import 'pages/authentification/screens/login_screen.dart';
 import 'pages/carte_Poubelle_manage/screens/carte_poubelle_screen.dart';
 import 'pages/collecte/screens/collecte_screen.dart'; // Assurez-vous que cette importation est correcte
-import 'pages/dashboard/screens/dashboard_screens.dart'; // Add this import
+import 'pages/dashboard/screens/dashboard_screens.dart'; 
+import 'pages/notifications/screens/notifications_screen.dart'; 
+
 
 void main() {
   // Assurez-vous que Flutter est initialisé
@@ -26,18 +28,19 @@ void main() {
   final trashMapController = TrashMapController();
   final collecteController = CollecteController();
   final dashboardController = DashboardController(); 
-
+  final notificationController = NotificationController();
 /*
   final dashboardController = DashboardController();
   final collecteController = CollecteController();
   final carteController = CarteController();
-  final notificationController = NotificationController();
+  
 */
   runApp(MyApp(
     authController: authController,
     trashMapController: trashMapController,
     collecteController: collecteController, 
     dashboardController: dashboardController,
+    notificationController: notificationController,
   ));
 }
 
@@ -46,13 +49,15 @@ class MyApp extends StatelessWidget {
   final TrashMapController trashMapController;
   final CollecteController collecteController;
   final DashboardController dashboardController;
+  final NotificationController notificationController; 
   
   const MyApp({
     super.key, 
     required this.authController, 
     required this.trashMapController,
     required this.collecteController,
-    required this.dashboardController
+    required this.dashboardController,
+    required this.notificationController,
   });
    
   @override
@@ -104,6 +109,7 @@ class MyApp extends StatelessWidget {
         '/map': (context) => TrashMapScreen(trashMapController: trashMapController),
         '/collecte': (context) => HistoriqueCollectesView(collecteController: collecteController),
         '/dashboard': (context) => DashboardScreen(dashboardController: dashboardController),  
+        '/notifications': (context) => NotificationsScreen(notificationController: notificationController),
 
       },
     );
