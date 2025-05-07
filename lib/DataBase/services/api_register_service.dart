@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  static const String baseUrl = 'http://10.0.2.2/api_mysql.php'; 
+  static const String baseUrl = 'http://10.0.2.2/api_register_mysql.php'; 
   
   static Future<Map<String, dynamic>> testConnection() async {
     try {

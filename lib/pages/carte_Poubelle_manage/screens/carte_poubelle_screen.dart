@@ -2,7 +2,7 @@ import 'package:abiaproject/common/theme/app_theme.dart';
 import 'package:abiaproject/pages/carte_Poubelle_manage/controllers/carte_poubelle_controller.dart';
 import 'package:abiaproject/partagés/widgets_partagés/nav_bar_avec_plus.dart';
 import 'package:abiaproject/database/login_data_base.dart';
-import 'package:abiaproject/database/services/api_service.dart';
+import 'package:abiaproject/database/services/api_register_service.dart';
 
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/material.dart';
