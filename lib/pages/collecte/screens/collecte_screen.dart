@@ -104,10 +104,10 @@ class HistoriqueCollectesView extends StatelessWidget {
             case 1:
               Navigator.pushReplacementNamed(context, '/dashboard');
               break;
-            case 3:
-              Navigator.pushReplacementNamed(context, '/notifications');
+            case 2:
+              Navigator.pushReplacementNamed(context, '/collecte');
               break;
-            case 4:
+            case 3:
               Navigator.pushReplacementNamed(context, '/notifications');
               break;
           }
@@ -115,8 +115,8 @@ class HistoriqueCollectesView extends StatelessWidget {
         useSvgIcons: false,
         icons: const [
           Symbols.distance_rounded,
-          Symbols.bar_chart_rounded,
-          Symbols.recycling_rounded,
+          Icons.bar_chart_rounded,
+          Symbols.delivery_truck_bolt_rounded,
           Symbols.notifications_unread_rounded,
         ],
         colors: const [
@@ -205,13 +205,17 @@ class CollectionTile extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          '${collection.binType} ${collection.id}',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
+                        Expanded(
+                          child: Text(
+                            '${collection.binType} ${collection.id}',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                            overflow: TextOverflow.ellipsis, // Truncate with ... if too long
                           ),
                         ),
+                        const SizedBox(width: 8), // Add some spacing
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
@@ -228,7 +232,8 @@ class CollectionTile extends StatelessWidget {
                           ),
                         ),
                       ],
-                    ),
+                    ),         
+                    const SizedBox(height: 4),
                     const SizedBox(height: 8),
                     Text(
                       'Collectée par ${collection.truckName}',

@@ -30,14 +30,21 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Notifications'),
+        automaticallyImplyLeading: false, // Supprime la flèche de retour
+        title: const Text(
+          'Notifications',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
+        ),
         centerTitle: true,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 1,
         actions: [
           PopupMenuButton<String>(
-            icon: const Icon(Icons.filter_list),
+            icon: const Icon(Icons.filter_alt_rounded),
             onSelected: (value) {
               setState(() {
                 if (value == 'all') {
@@ -140,8 +147,15 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             const SnackBar(content: Text('Notifications rafraîchies')),
           );
         },
-        backgroundColor: Colors.blue,
-        child: const Icon(Icons.refresh),
+        backgroundColor: AppColors.primaryColor,
+        elevation: 4,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(26), 
+        ),
+        child: const Icon(
+          Icons.refresh,
+          color: Colors.white,
+          ),
       ),
       bottomNavigationBar: NavBarSansPlus(
         initialPage: 3,

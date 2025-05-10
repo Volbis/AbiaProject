@@ -135,4 +135,95 @@ class CollecteController extends GetxController {
       return 'à l\'instant';
     }
   }
+
+  // Ajoute une nouvelle collecte à l'historique et l'enregistre en base de données
+  Future<bool> ajouterNouvelleCollecte({
+    required String binId,
+    required String binType,
+    required String binColor,
+    required String truckName,
+    required double quantite,
+    String? binName,
+    String? binAddress,
+    double? binCapacite,
+  }) async {
+    isLoading.value = true;
+    
+    try {
+      // Créer l'objet TrashBin si les informations sont fournies
+      TrashBin? trashBin;
+      if (binName != null && binAddress != null && binCapacite != null) {
+        trashBin = TrashBin(
+          nomPoubelle: binName,
+          address: binAddress,
+          capaciteTotale: binCapacite,
+        );
+      }
+      
+      // Générer un ID unique basé sur un timestamp
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final id = 'COL-${timestamp.toString().substring(timestamp.toString().length - 4)}';
+      
+      // Créer l'objet Collection
+      final nouvelleCollecte = Collection(
+        id: id,
+        binType: binType,
+        binColor: binColor,
+        truckName: truckName,
+        collectionTime: DateTime.now(),
+        quantiteCollectee: quantite,
+        trashBin: trashBin,
+      );
+      
+      // En production: Envoyer les données à l'API ou à la base de données
+      // await DatabaseConnection.executeQuery(
+      //   'INSERT INTO collectes (id, bin_type, bin_color, truck_name, collection_time, quantite) '
+      //   'VALUES (?, ?, ?, ?, ?, ?)',
+      //   [id, binType, binColor, truckName, DateTime.now().toIso8601String(), quantite]
+      // );
+      
+      // Ajouter la nouvelle collecte à la liste en mémoire (au début pour qu'elle apparaisse en haut)
+      collections.insert(0, nouvelleCollecte);
+      
+      if (kDebugMode) {
+        print("Nouvelle collecte ajoutée: $id");
+      }
+      
+      return true;
+    } catch (e) {
+      if (kDebugMode) {
+        print("Erreur lors de l'ajout de la collecte: $e");
+      }
+      return false;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  // Récupère toutes les collectes depuis la base de données
+  Future<void> fetchCollections() async {
+    isLoading.value = true;
+    
+    try {
+      // En production: Récupérer les données depuis l'API ou la base de données
+      // final results = await DatabaseConnection.executeQuery(
+      //   'SELECT * FROM collectes ORDER BY collection_time DESC'
+      // );
+      
+      // Pour l'instant, on utilise les données de test
+      collections.clear();
+      collections.addAll(_generateTestData());
+      
+      if (kDebugMode) {
+        print("Collectes récupérées: ${collections.length}");
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("Erreur lors de la récupération des collectes: $e");
+      }
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
 }
