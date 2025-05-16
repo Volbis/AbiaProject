@@ -53,7 +53,7 @@ class DashboardController extends GetxController {
     try {
       // Appel à la procédure stockée qui calcule le taux moyen de remplissage
       final results = await DatabaseConnection.executeQuery(
-        'SELECT AVG(niveau_remplissage) AS moyenne FROM poubelles WHERE actif = 1'
+        'SELECT AVG(niveau_remplissage) AS moyenne FROM poubelle WHERE verouille = 0'
       );
       
       if (results.isNotEmpty) {
@@ -81,11 +81,11 @@ class DashboardController extends GetxController {
       // Supposons qu'une poubelle est "pleine" si son niveau de remplissage est > 80%
       final results = await DatabaseConnection.executeQuery('''
         SELECT 
-          DAYOFWEEK(date_derniere_mesure) AS jour_semaine, 
+          DAYOFWEEK(date_derniere_mis_a_jour) AS jour_semaine, 
           COUNT(*) AS nombre_poubelles 
-        FROM poubelles 
-        WHERE niveau_remplissage > 80 AND actif = 1
-        GROUP BY DAYOFWEEK(date_derniere_mesure)
+        FROM poubelle
+        WHERE niveau_remplissage > 90 AND actif = 1
+        GROUP BY DAYOFWEEK(date_derniere_mis_a_jour)
         ORDER BY jour_semaine
       ''');
       

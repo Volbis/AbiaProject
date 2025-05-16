@@ -1,3 +1,4 @@
+import 'package:abiaproject/database/login_data_base.dart';
 import 'package:get/get.dart';
 import 'package:flutter/foundation.dart';
 
@@ -138,31 +139,67 @@ class CollecteController extends GetxController {
 
   // Ajoute une nouvelle collecte à l'historique et l'enregistre en base de données
   Future<bool> ajouterNouvelleCollecte({
-    required String binId,
-    required String binType,
-    required String binColor,
-    required String truckName,
-    required double quantite,
-    String? binName,
-    String? binAddress,
-    double? binCapacite,
+    required String collecteId,  // ID de la collecte planifiée
   }) async {
     isLoading.value = true;
     
     try {
-      // Créer l'objet TrashBin si les informations sont fournies
-      TrashBin? trashBin;
-      if (binName != null && binAddress != null && binCapacite != null) {
-        trashBin = TrashBin(
-          nomPoubelle: binName,
-          address: binAddress,
-          capaciteTotale: binCapacite,
-        );
+      // Récupérer les informations de la collecte planifiée depuis la base de données
+      final results = await DatabaseConnection.executeQuery(
+        '''
+        SELECT 
+          cp.id AS collecte_id,
+          cp.route_id,
+          r.nom AS route_nom,
+          p.id AS poubelle_id, 
+          p.nom AS poubelle_nom,
+          p.capacite_totale,
+          p.adresse,
+          p.niveau_remplissage,
+          u.nom AS agent_nom,
+          u.prenom AS agent_prenom
+        FROM collecte_planifiee cp
+        JOIN route r ON cp.route_id = r.id
+        JOIN poubelle_dans_route pdr ON r.id = pdr.route_id
+        JOIN poubelle p ON pdr.poubelle_id = p.id
+        JOIN utilisateur u ON cp.agent_collecte_id = u.id
+        WHERE cp.id = ?
+        ORDER BY pdr.ordre
+        ''',
+        [collecteId]
+      );
+      
+      if (results.isEmpty) {
+        if (kDebugMode) {
+          print("Collecte planifiée non trouvée: $collecteId");
+        }
+        return false;
       }
+      
+      // On prend la première poubelle de la route pour cette collecte
+      final collecteData = results.first;
+      
+      // Créer l'objet TrashBin avec les données récupérées
+      TrashBin trashBin = TrashBin(
+        nomPoubelle: collecteData['poubelle_nom'] ?? 'Poubelle sans nom',
+        address: collecteData['adresse'] ?? 'Adresse inconnue',
+        capaciteTotale: (collecteData['capacite_totale'] as num?)?.toDouble() ?? 100.0,
+      );
+      
+      // Quantité collectée = niveau de remplissage * capacité totale / 100
+      final niveauRemplissage = (collecteData['niveau_remplissage'] as num?)?.toDouble() ?? 0.0;
+      final quantite = (niveauRemplissage * trashBin.capaciteTotale) / 100;
       
       // Générer un ID unique basé sur un timestamp
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       final id = 'COL-${timestamp.toString().substring(timestamp.toString().length - 4)}';
+      
+      // Définir le type et la couleur de la poubelle (à adapter selon votre modèle de données)
+      final binType = "Poubelle"; // Valeur par défaut, à ajuster selon votre modèle
+      final binColor = "blue"; // Valeur par défaut, à ajuster selon votre modèle
+      
+      // Nom du camion = Nom de la route (ou autre valeur disponible)
+      final truckName = "${collecteData['agent_prenom']} ${collecteData['agent_nom']} - ${collecteData['route_nom']}";
       
       // Créer l'objet Collection
       final nouvelleCollecte = Collection(
@@ -175,18 +212,18 @@ class CollecteController extends GetxController {
         trashBin: trashBin,
       );
       
-      // En production: Envoyer les données à l'API ou à la base de données
-      // await DatabaseConnection.executeQuery(
-      //   'INSERT INTO collectes (id, bin_type, bin_color, truck_name, collection_time, quantite) '
-      //   'VALUES (?, ?, ?, ?, ?, ?)',
-      //   [id, binType, binColor, truckName, DateTime.now().toIso8601String(), quantite]
-      // );
+      // Ici vous pourriez ajouter le code pour mettre à jour la base de données
+      // Par exemple, mettre à jour le statut de la collecte planifiée
+      await DatabaseConnection.executeQuery(
+        'CALL sp_marquer_collecte_terminee(?)',
+        [collecteId]
+      );
       
-      // Ajouter la nouvelle collecte à la liste en mémoire (au début pour qu'elle apparaisse en haut)
+      // Ajouter la nouvelle collecte à la liste en mémoire
       collections.insert(0, nouvelleCollecte);
       
       if (kDebugMode) {
-        print("Nouvelle collecte ajoutée: $id");
+        print("Nouvelle collecte ajoutée: $id pour la collecte planifiée: $collecteId");
       }
       
       return true;
@@ -199,8 +236,7 @@ class CollecteController extends GetxController {
       isLoading.value = false;
     }
   }
-
-  // Récupère toutes les collectes depuis la base de données
+    // Récupère toutes les collectes depuis la base de données
   Future<void> fetchCollections() async {
     isLoading.value = true;
     

@@ -2,8 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class AbiaApiService {
-  // URL de base de l'API (à ajuster selon votre configuration)
-  final String baseUrl = 'http://10.0.2.2/api-abia.php'; // Remplacez X par votre adresse IP locale
+  final String baseUrl = 'http://10.0.2.2/api-abia.php';
   
   /// Récupère les niveaux de remplissage de toutes les poubelles
   Future<Map<String, PoubelleInfo>> getFillLevels() async {
@@ -71,25 +70,6 @@ class AbiaApiService {
     }
   }
   
-  /// Convertit une map de poubelles en liste
-  List<PoubelleInfo> poubellesMapToList(Map<String, PoubelleInfo> poubellesMap) {
-    final List<PoubelleInfo> poubellesList = [];
-    
-    poubellesMap.forEach((id, info) {
-      // Ajouter l'ID à l'objet poubelle
-      final poubelle = PoubelleInfo(
-        id: id,
-        niveauRemplissage: info.niveauRemplissage,
-        statut: info.statut,
-        latitude: info.latitude,
-        longitude: info.longitude,
-      );
-      
-      poubellesList.add(poubelle);
-    });
-    
-    return poubellesList;
-  }
 }
 
 /// Classe représentant les informations d'une poubelle

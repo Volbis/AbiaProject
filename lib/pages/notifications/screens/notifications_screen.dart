@@ -160,7 +160,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       bottomNavigationBar: NavBarSansPlus(
         initialPage: 3,
         onPageChanged: (index) {
-          if (index == 1) return; // Déjà sur cette page
+          if (index == 3) return; // Déjà sur cette page
           
           switch (index) {
             case 0:

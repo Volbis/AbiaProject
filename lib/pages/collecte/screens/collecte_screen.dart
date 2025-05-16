@@ -243,24 +243,7 @@ class CollectionTile extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Icon(
-                          Symbols.weight_rounded,
-                          size: 16,
-                          color: Colors.grey[600],
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${collection.quantiteCollectee} kg',
-                          style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
+ 
                   ],
                 ),
               ),
@@ -342,7 +325,6 @@ class CollectionDetailsSheet extends StatelessWidget {
           // Détails de la collecte
           _buildDetailSection('Informations générales', [
             _buildDetailRow(Symbols.numbers_rounded, 'ID', collection.id),
-            _buildDetailRow(Symbols.delete_rounded, 'Type', collection.binType),
             _buildDetailRow(Symbols.local_shipping_rounded, 'Camion', collection.truckName),
           ]),
           
@@ -377,7 +359,6 @@ class CollectionDetailsSheet extends StatelessWidget {
             _buildDetailSection('Informations sur la poubelle', [
               _buildDetailRow(Symbols.badge_rounded, 'Nom', trashBin.nomPoubelle),
               _buildDetailRow(Symbols.location_on_rounded, 'Adresse', trashBin.address),
-              _buildDetailRow(Symbols.inventory_2_rounded, 'Capacité', '${trashBin.capaciteTotale} kg'),
             ]),
           ],
           
