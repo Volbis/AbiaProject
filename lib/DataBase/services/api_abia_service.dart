@@ -5,7 +5,7 @@ class AbiaApiService {
   final String baseUrl = 'http://10.0.2.2/api-abia.php';
   
   /// Récupère les niveaux de remplissage de toutes les poubelles
-  Future<Map<String, PoubelleInfo>> getFillLevels() async {
+  Future<Map<String, PoubelleInfo>> getFillLevelsFromApi() async {
     try {
       final response = await http.post(
         Uri.parse(baseUrl),
@@ -35,7 +35,9 @@ class AbiaApiService {
       throw Exception('Erreur de communication avec l\'API: $e');
     }
   }
-  
+
+  /*
+  Fait directement par l'appel d'api par le système arduino
   /// Met à jour les informations d'une poubelle
   Future<bool> updatePoubelle({
     required String id,
@@ -69,7 +71,7 @@ class AbiaApiService {
       throw Exception('Erreur de communication avec l\'API: $e');
     }
   }
-  
+  */
 }
 
 /// Classe représentant les informations d'une poubelle
@@ -99,6 +101,8 @@ class PoubelleInfo {
     );
   }
   
+/*
+  // En cas de communication avec l'API
   /// Convertit l'instance en objet JSON
   Map<String, dynamic> toJson() {
     return {
@@ -109,4 +113,5 @@ class PoubelleInfo {
       'longitude': longitude,
     };
   }
+*/
 }
