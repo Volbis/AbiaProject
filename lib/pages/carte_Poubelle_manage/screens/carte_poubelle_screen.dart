@@ -625,7 +625,7 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
   
   }
 
-  Future<void> _initTrashBins() async {
+Future<void> _initTrashBins() async {
   // Si les données sont déjà en cache, les utiliser
   if (_poubelleService.initialLoadDone) {
     setState(() {
@@ -633,6 +633,14 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
       trashBins.addAll(_poubelleService.cachedTrashBins);
       print('${trashBins.length} poubelles chargées depuis le cache');
     });
+    
+    // Force une mise à jour immédiate depuis l'API après chargement initial
+    try {
+      final poubelleData = await _poubelleService.getLatestData();
+      _updateTrashBins(poubelleData);
+    } catch (e) {
+      print('Erreur lors de la mise à jour immédiate : $e');
+    }
   } else {
     // Sinon, déclencher le chargement
     final loadedBins = await _poubelleService.loadTrashBinsIfNeeded();
@@ -855,7 +863,7 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
                 top: pxPoint.y - infoWindowHeight - markerHeight,
                 width: infoWindowWidth,
                 child: _buildTrashBinInfoWindow(localSelectedBin),
-              );
+              );  
             },
           ),
 
@@ -894,6 +902,51 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
               ),
             ),
           ),
+          
+          // Après le bouton de localisation, ajoutez un second bouton flottant:
+          Positioned(
+            bottom: 190, // Au-dessus du bouton de localisation
+            right: 20,
+            child: SizedBox(
+              width: 60,
+              height: 60,
+              child: Material(
+                color: AppColors.secondaryColor,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                elevation: 4,
+                child: InkWell(
+                  onTap: () async {
+                    // Afficher un indicateur de chargement
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Rafraîchissement des données...')),
+                    );
+                    
+                    try {
+                      final data = await _poubelleService.getLatestData();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Données mises à jour!')),
+                      );
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Erreur: $e')),
+                      );
+                    }
+                  },
+                  borderRadius: BorderRadius.circular(30),
+                  child: const Center(
+                    child: Icon(
+                      Icons.refresh,
+                      color: Colors.white,
+                      size: 28,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+                    
           // NavBar flottante en bas (par-dessus tout)
           Positioned(
             bottom: 0,

@@ -52,11 +52,26 @@ class PoubelleService {
         _initialLoadDone = true;
         print('${_cachedTrashBins.length} poubelles chargées depuis la base de données');
       } catch (e) {
+        
         print('Erreur lors du chargement des poubelles: $e');
+        _initialLoadDone = true;
       }
     }
     
     return _cachedTrashBins;
+  }
+
+    // Dans PoubelleService
+  Future<Map<String, PoubelleInfo>> getLatestData() async {
+    try {
+      final updatedData = await _abiaApiService.getFillLevelsFromApi();
+      // Distribuer à tous les abonnés
+      _poubelleStreamController.add(updatedData);
+      return updatedData;
+    } catch (e) {
+      print('Erreur lors de la récupération des données : $e');
+      throw e;
+    }
   }
 
   void startPeriodicUpdates() {
