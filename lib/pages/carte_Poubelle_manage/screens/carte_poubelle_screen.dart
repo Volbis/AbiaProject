@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:abiaproject/common/theme/app_theme.dart';
+import 'package:abiaproject/database/services/poubelle_service.dart';
 import 'package:abiaproject/pages/carte_Poubelle_manage/controllers/carte_poubelle_controller.dart';
 import 'package:abiaproject/partagés/widgets_partagés/nav_bar_avec_plus.dart';
 import 'package:abiaproject/database/login_data_base.dart';
@@ -27,15 +28,15 @@ class TrashMapScreen extends StatefulWidget {
 
 class _TrashMapScreenState extends State<TrashMapScreen> {
  
-  final AbiaApiService _abiaService = AbiaApiService();
-  Timer? _refreshTimer;
-  bool _isUpdating = false;
+  // Utilisation du singleton pour éviter que la navBar recharge toujours la map à chaque fois
+  final _poubelleService = PoubelleService();
+  StreamSubscription? _poubelleSubscription;
 
   final MapController _mapController = MapController();
   Position? _currentPosition;
   bool _loading = true;
   
-    // Ajout de poubelle
+  // Ajout de poubelle
   bool _isAddingTrashBin = false;  // Mode d'ajout de poubelle
   latlong.LatLng? _newBinPosition;  // Position sélectionnée
   // Variables pour l'infobulle personnalisée
@@ -575,16 +576,74 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
     }
   }
     
+  void _updateTrashBins(Map<String, PoubelleInfo> poubelleData) {
+    setState(() {
+      // Pour chaque poubelle mise à jour
+      poubelleData.forEach((id, poubelleInfo) {
+        final index = trashBins.indexWhere((bin) => bin.nomPoubelle == id);
+        
+        if (index != -1) {
+          // Calculer le nouveau statut
+          Status newStatus = _calculateFillLevel(poubelleInfo.niveauRemplissage);
+          
+          // Mise à jour de la poubelle
+          TrashBin updatedBin = TrashBin(
+            nomPoubelle: trashBins[index].nomPoubelle,
+            latLng: trashBins[index].latLng,
+            address: trashBins[index].address,
+            status: newStatus,
+            fillPercentage: poubelleInfo.niveauRemplissage,
+            capaciteTotale: trashBins[index].capaciteTotale,
+            seuilAlerte: trashBins[index].seuilAlerte,
+            verrouille: trashBins[index].verrouille,
+          );
+          
+          trashBins[index] = updatedBin;
+          
+          // Mise à jour de la sélection si nécessaire
+          if (selectedBin?.nomPoubelle == id) {
+            selectedBin = updatedBin;
+          }
+        }
+      });
+    });
+  }
   
+
   // Initialisation de l'état
   @override
   void initState() {
     super.initState();
     _getCurrentLocation();
 
-    _loadTrashBins();
+    // Utiliser les poubelles déjà chargées ou les charger si c'est la première fois
+    _initTrashBins();
+  
+
+      // S'abonner aux mises à jour des poubelles
+    _poubelleSubscription = _poubelleService.poubelleStream.listen(_updateTrashBins);
+  
   }
 
+  Future<void> _initTrashBins() async {
+  // Si les données sont déjà en cache, les utiliser
+  if (_poubelleService.initialLoadDone) {
+    setState(() {
+      trashBins.clear();
+      trashBins.addAll(_poubelleService.cachedTrashBins);
+      print('${trashBins.length} poubelles chargées depuis le cache');
+    });
+  } else {
+    // Sinon, déclencher le chargement
+    final loadedBins = await _poubelleService.loadTrashBinsIfNeeded();
+    setState(() {
+      trashBins.clear();
+      trashBins.addAll(loadedBins);
+    });
+  }
+}
+
+/*
   Future<void> _loadTrashBins() async {
     try {
       print('Chargement des poubelles depuis l\'API...');
@@ -614,9 +673,12 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
       print('Erreur lors du chargement des poubelles: $e');
     }
   }
-      
+*/ 
+
   @override
   void dispose() {
+    // Se désabonner uniquement du stream, mais ne pas arrêter le service
+    _poubelleSubscription?.cancel();
     super.dispose();
   }
 
@@ -840,6 +902,10 @@ class _TrashMapScreenState extends State<TrashMapScreen> {
             child: NavBarAvecPlus(
               initialPage: 0, // Icône de carte sélectionnée
               onPageChanged: (index) {
+
+                if (index == 0 && ModalRoute.of(context)?.settings.name == '/home') {
+                  return;
+                }
                 // Logique de navigation entre les différentes pages
                 switch (index) {
                   case 0:

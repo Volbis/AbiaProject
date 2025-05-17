@@ -1,3 +1,4 @@
+import 'package:abiaproject/database/services/poubelle_service.dart';
 import 'package:flutter/material.dart';
 
 // Importations des thèmes et constantes
@@ -23,6 +24,10 @@ void main() {
   // Assurez-vous que Flutter est initialisé
   WidgetsFlutterBinding.ensureInitialized();
   
+  // Initialiser le service de poubelles pour charger les données au démarrage
+  final poubelleService = PoubelleService();
+  poubelleService.startPeriodicUpdates();
+
   // Initialiser les contrôleurs de chaque page
   final authController = AuthController();
   final trashMapController = TrashMapController();
@@ -44,22 +49,40 @@ void main() {
   ));
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   final AuthController authController;
   final TrashMapController trashMapController;
   final CollecteController collecteController;
   final DashboardController dashboardController;
-  final NotificationController notificationController; 
-  
+  final NotificationController notificationController;
+
   const MyApp({
-    super.key, 
-    required this.authController, 
+    super.key,
+    required this.authController,
     required this.trashMapController,
     required this.collecteController,
     required this.dashboardController,
     required this.notificationController,
   });
    
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  final _poubelleService = PoubelleService();
+  
+  @override
+  void initState() {
+    super.initState();
+  }
+  
+  @override
+  void dispose() {
+    _poubelleService.dispose();
+    super.dispose();
+  }
+  
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -102,15 +125,15 @@ class MyApp extends StatelessWidget {
           ),
         ),
         useMaterial3: true,
+
       ),
       initialRoute: '/login',
       routes: {
-        '/login': (context) => LoginScreen(authController: authController),
-        '/map': (context) => TrashMapScreen(trashMapController: trashMapController),
-        '/collecte': (context) => HistoriqueCollectesView(collecteController: collecteController),
-        '/dashboard': (context) => DashboardScreen(dashboardController: dashboardController),  
-        '/notifications': (context) => NotificationsScreen(notificationController: notificationController),
-
+        '/login': (context) => LoginScreen(authController: widget.authController),
+        '/map': (context) => TrashMapScreen(trashMapController: widget.trashMapController),
+        '/collecte': (context) => HistoriqueCollectesView(collecteController: widget.collecteController),
+        '/dashboard': (context) => DashboardScreen(dashboardController: widget.dashboardController),  
+        '/notifications': (context) => NotificationsScreen(notificationController: widget.notificationController),
       },
     );
   }
